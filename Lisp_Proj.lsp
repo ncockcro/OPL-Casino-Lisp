@@ -93,9 +93,6 @@
 	(cond ( ( equal player "True" ) "Human" )
 			( t '"Computer" ) ) ) )
 	
-(print (FirstPlayer))
-
-
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; Function Name: LoadDeck
@@ -173,8 +170,6 @@
 	  
 
 ;(print(GetFourCards (LoadDeck) 4 () ))
-
-(print (SubtractCardsFromDeck (LoadDeck) 4))
 
 
 ; ******** Human *********
@@ -293,8 +288,6 @@
 						( t ( list playerMove ( MakeTrail hand table ) )) ) )) ) )
 
 
-(print (HumanMakeMove '(CA) '(CA)))
-
 ; Computer Moves
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; Function Name: PlayRound
@@ -323,26 +316,52 @@
 ; 	4)
 ; Assistance Received: none 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun PlayRound(passedDeck passedHumanHand passedComputerHand passedTable passedFirstPlayer passedNextPlayer passedRoundCycle)
+(defun PlayRound ( passedDeck passedHumanHand passedComputerHand passedTable passedFirstPlayer passedNextPlayer passedRoundCycle )
 
-	(Let* ((deck passedDeck)
-			(humanHand passedHumanHand)
-			(computerHand passedComputerHand)
-			(table passedTable)
-			(firstPlayer passedFirstPlayer)
-			(nextPlayer passedNextPlayer)
-			(roundCycle passedRoundCycle)
+	( Let* (( deck passedDeck )
+			( humanHand passedHumanHand )
+			( computerHand passedComputerHand )
+			( table passedTable )
+			( firstPlayer passedFirstPlayer )
+			( nextPlayer passedNextPlayer )
+			( roundCycle passedRoundCycle ) )
+			
+			(print table)
+			
+	; If this is a brand new game, we need to deal cards to the player
+	( cond (( eq roundCycle 1)
+		   ( PlayRound deck (GetFourCards deck 4 ()) computerHand table firstPlayer nextPlayer (+ roundCycle 1))))
+		   
+	; Then remove the first four cards from the deck
+	( cond (( eq roundCycle 2)
+		   ( PlayRound ( SubtractCardsFromDeck deck 4) humanHand computerHand table firstPlayer nextPlayer (+ roundCycle 1))))
+		 
+	; Then deal four cards to the computer
+	( cond ((eq roundCycle 3)
+		   ( PlayRound deck humanHand (GetFourCards deck 4 ()) table firstPlayer nextPlayer (+ roundCycle 1))))
+		
+	; Then remove the first four cards from the deck
+	( cond ((eq roundCycle 4)
+		   ( PlayRound ( SubtractCardsFromDeck deck 4) humanHand computerHand table firstPlayer nextPlayer (+ roundCycle 1))))
+	
+	; Then deal four cards to the table
+	( cond ((eq roundCycle 5)
+		   ( PlayRound deck humanHand computerHand (GetFourCards deck 4 ()) firstPlayer nextPlayer (+ roundCycle 1))))
+		
+	; Then finally remove the first four cards from the table
+	( cond ((eq roundCycle 6)
+		   ( PlayRound ( SubtractCardsFromDeck deck 4) humanHand computerHand table firstPlayer nextPlayer (+ roundCycle 1))))
 	
 	; Check if the human goes first or the computer goes first and then it will call a function
 	; for that player to make a move
-	(cond ((eq nextPlayer "Human") (HumanMakeMove) (nextPlayer "Computer"))
-		  ((eq nextPlayer "Computer") (computerMakeMove) (nextPlayer "Human")))
+	( cond (( eq nextPlayer "Human" ) ( HumanMakeMove ) ( nextPlayer "Computer" ))
+		  (( eq nextPlayer "Computer" ) ( computerMakeMove ) ( nextPlayer "Human" )))
 	
 	; Once the first player makes a move, not its time for the second player	
-	(cond ((eq nextPlayer "Human") (humanMakeMove) (nextPlayer "Computer"))
-		   (eq nextPlayer "Computer") (computerMakeMove) (nextPlayer "Human"))
+	( cond (( eq nextPlayer "Human" ) ( humanMakeMove ) ( nextPlayer "Computer" ))
+		   ( eq nextPlayer "Computer" ) ( computerMakeMove ) ( nextPlayer "Human" ))
 		   
-	(PlayRound)
+	( PlayRound deck humanHand computerHand table firstPlayer nextPlayer (+ roundCycle 1) ) ) )
 	
 	
 ; This starts the round of the game
