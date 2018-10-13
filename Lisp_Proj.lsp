@@ -367,6 +367,51 @@
 ; This starts the round of the game
 ; Passing in: the deck,   humanHand, computerHand, table, firstPlayer, next player, and the round cycle
 (PlayRound (ActualDeck (loadDeck)) () () () (FirstPlayer) () 1)
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; Function Name: PlayTournament
+; Purpose: To play through a tournament of casino
+; Parameters:
+;	passedHumanScore, the score for the human player
+;	passedComputerScore, the score for the computer player
+;	passedroundCounter, the counter for how many rounds there has been
+;	passedPile, contains two lists of the players piles, the first is the human, the second is the computer
+; Return Value: None
+; Local Variables: 
+;   humanScore, holds the human's score for the tournament
+;	computerScore, holds the computer's score for the tournament
+;	roundCounter, holds the current round they are on
+;	pile, holds the piles for each of the players in a lists with two sub lists, the first is the human's, the second is the computer's
+; Algorithm: 
+;	1) 
+;  	2)
+;	3)
+; 	4)
+; Assistance Received: none 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun PlayTournament ( passedHumanScore passedComputerScore passedRoundCounter passedPile )
+
+	(Let* (( humanScore passedHumanScore )
+	   ( computerScore passedComputerScore )
+	   ( roundCounter passedRoundCounter )
+	   ( pile passedPile ))
+	   
+	( PlayRound (ActualDeck (loadDeck)) () () () (FirstPlayer) () 1)
+	
+	
+	; If the human and computer scores are the same and the human's score is greater than 21, then we have a tie!
+	(cond ( and ( eq humanScore computerScore )
+				( >= huamnScore 21 ) ( print "It's a tie!" ) ) )
+				
+	; If the human score is greater or equal to 21 and the computer's score is less than 21, then the human won!
+	( cond ( and ( >= humanScore 21 ) 
+				 ( < computerScore 21 ) ( print "You won!" ) ) )
+	
+	; If the computer score is greater or equal to 21 and the human's score is less than 21, then the computer won!
+	( cond ( and ( >= computerScore 21) 
+				 ( < humanScore 21) (print "The computer won.") ) )
+	
 		  
 
 
