@@ -568,6 +568,7 @@
 		  (( < humanNumCards computerNumCards ) "Human" )
 		  (( > humanNumCards computerNumCards ) "Computer" )
 		  (( eq humanNumCards computerNumCards ) "Neither" ) ) ) )
+		  
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -579,6 +580,7 @@
 ;	passedroundCounter, the counter for how many rounds there has been
 ;	passedPile, contains two lists of the players piles, the first is the human, the second is the computer
 ;	passedTallyScore, kind of like a boolean value, if the scores need to be tallied, this will be "True", otherwise "False"
+;	passedTallyScoreCounter, counter for knowing which function to call for calculating the player's points
 ; Return Value: None
 ; Local Variables: 
 ;   humanScore, holds the human's score for the tournament
@@ -586,6 +588,7 @@
 ;	roundCounter, holds the current round they are on
 ;	pile, holds the piles for each of the players in a lists with two sub lists, the first is the human's, the second is the computer's
 ; 	tallyScore, holds either "True" or "False" if the scores need to be tallied
+;	tallyScoreCounter, keeps track of which function to call to keep track of points
 ; Algorithm: 
 ;	1) 
 ;  	2)
@@ -593,19 +596,44 @@
 ; 	4)
 ; Assistance Received: none 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun PlayTournament ( passedHumanScore passedComputerScore passedRoundCounter passedPile passedTallyScore)
+(defun PlayTournament ( passedHumanScore passedComputerScore passedRoundCounter passedPile passedTallyScore passedTallyScoreCounter passedMoreCardPlayer passedMoreSpadePlayer )
 
 	(Let* (( humanScore passedHumanScore )
 	   ( computerScore passedComputerScore )
 	   ( roundCounter passedRoundCounter )
 	   ( pile passedPile )
-	   ( tallyScore passedTallyScore ))
+	   ( tallyScore passedTallyScore )
+	   (tallyScoreCounter passedTallyScoreCounter)
+	   ( moreCardPlayer passedMoreCardPlayer )
+	   ( moreSpadePlayer passedMoreSpadePlayer ))
 	   
-	( PlayRound (ActualDeck (loadDeck)) () () () (FirstPlayer) () 1)
 	
 	
 	; If the human and computer scores are the same and the human's score is greater than 21, then we have a tie!
-	(cond ( and ( eq humanScore computerScore )
+	(cond ( and ( eq tallyScore "True")
+				( eq tallyScoreCounter 1) (PlayTournament humanScore computerScore roundCounter pile tallyScore ( + tallyScoreCounter 1) 
+				(CheckWhoHasMoreCards pile 0 0 1 ) "Neither" ) )
+			
+		  ; After getting the player with the most cards, we now need to check if that player is the human and add 3 points to their score
+		  ( and ( eq tallyScore "True" )
+				( eq moreCardPlayer "Human" ) (PlayTournament ( + humanScore 3 ) computerScore roundCounter pile tallyScore tallyScoreCounter "Neither" "Neither") )
+			
+		  ; After getting the player with the most cards, now we must check if the computer had the most cards and add 3 points of necessary
+		  ( and ( eq tallyScore "True" )
+				( eq moreCardPlayer "Computer" ) (PlayTournament humanScore ( + computerScore 3 ) roundCounter pile tallyScore tallyScoreCounter "Neither" "Neither" ) )
+				
+		  ; Now we need to get the player who has the most spades
+		  ( and ( eq tallyScore "True" )
+				( eq tallyScoreCounter 2 ) ( PlayTournament humanScore computerScore roundCounter pile tallyScore 
+				( + tallyScoreCounter 1 ) "Neither" (CheckWhoHasMoreSpades pile 0 0 1 ) ) )
+				
+		  ( and ( eq tallyScore "True" )
+				( eq moreSpadePlayer "Human" ) (PlayTournament ( + humanScore 1 ) computerScore roundCounter pile tallyScore tallyScoreCounter "Neither" "Neither" ) )
+				
+		  ( and ( eq tallyScore "True" )
+				( eq tallyScoreCounter 3 ) ( PlayTournament 
+	
+		  ( and ( eq humanScore computerScore )
 				( >= huamnScore 21 ) ( print "It's a tie!" ) )
 				
 				; If the human score is greater or equal to 21 and the computer's score is less than 21, then the human won!
