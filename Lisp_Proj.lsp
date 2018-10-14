@@ -370,6 +370,207 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; Function Name: TenDiamonds
+; Purpose: To determine if a player has the ten of diamonds that way they can get 2 points
+; Parameters:
+;	passedPile, the pile for a player
+;	passedPlayerScore, the current player's score
+; Return Value: the score of the player either with the added 2 points or not
+; Local Variables: 
+; 	pile, holds the player's pile
+;	playerScore, a current player's score
+; Algorithm: 
+;	1) If the player's pile is equal to the empty list, then return the player's score
+;  	2) If the first element in the player's pile is equal to the ten of diamonds, call TenDiamonds again but increment the score by 2
+;	3) If neither of the previous situations were true, recursively call the function again with reducing the pile by one
+; Assistance Received: none 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun TenDiamonds ( passedPile passedPlayerScore )
+
+	(Let* (( pile passedPile )
+		  ( playerScore passedPlayerScore ))
+	
+	; If the current card were looking at is the empty set, then return the score
+	(cond ((eq pile () ) playerScore )
+	
+		  ; If the card were looking at is the ten of diamonds, then call the function again and increment the score by 2
+		  (( eq (first pile) 'DX ) (TenDiamonds (rest pile) ( + playerScore 2) ) )
+		  
+		  ; If it was neither of those things, then recursively call the function with the rest of the player pile
+		  ( t (TenDiamonds ( rest pile ) playerScore ) ) ) ) )
+		 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; Function Name: TwoSpades
+; Purpose: To check if a player has the two of spades and increment their account
+; Parameters: 
+;	passedPile, a player's pile
+;	passedPlayerScore, a player's score
+; Return Value: An updated score of the player with either plus 1 or plus nothing
+; Local Variables: 
+;	pile, holds the player's pile
+;	playerScore, holds the player's current score
+; Algorithm: 
+;	1) If the player's pile is an empty list, return the updated player score
+;  	2) If the first element in the player's pile is the two of spades, increment the player's score by 1
+;	3) If neither of those evaluated to true, recursively call TwoSpades and deduct a card from the player's pile
+; Assistance Received: none 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;		 
+( defun TwoSpades ( passedPile passedPlayerScore )
+
+	(Let* (( pile passedPile )
+		  ( playerScore passedPlayerScore ))
+		  
+	(cond  (( eq pile () ) playerScore )
+	
+		   (( eq (first pile ) 'S2 ) (TwoSpades ( rest pile ) (+ playerScore 1) ) )
+		   (( t (TwoSpades ( rest pile ) playerScore ) ) ) ) ) )
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; Function Name: CountAces
+; Purpose: To count the aces from a player's pile and increment a player's score
+; Parameters:
+;	passedPile, a player's pile
+;	passedPlayerScore, a player's score
+; Return Value: An updated version of the player's score incremented by how many aces they had
+; Local Variables: 
+;	pile, holds the player's pile
+;	playerScore, holds the player's score
+; Algorithm: 
+;	1) If the pile is equal to the empty set, return the player's score
+;  	2) If the first card in the player's pile is equal to ace of club, recursively call and increment the score
+;	3) If the first card in the player's pile is equal to ace of diamonds, recursively call and increment the score
+; 	4) If the first card in the player's pile is equal to ace of hearts, recursively call and increment the score
+;	5) If the first card in the player's pile is equal to ace of spades, recursively call and increment the score
+;	6) If none of those options were true, recursively call CountAces and decrement a card from the player's pile
+; Assistance Received: none 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;		   
+( defun CountAces ( passedPile passedPlayerScore )
+
+	(Let* (( pile passedPile )
+		  ( playerScore passedPlayerScore ))
+		  
+	(cond (( eq pile () ) playerScore )
+		  (( eq (first pile ) 'CA ) ( CountAces ( rest pile ) ( + playerScore 1 ) ) )
+		  (( eq (first pile ) 'DA ) ( CountAces ( rest pile ) ( + playerScore 1 ) ) )
+		  (( eq (first pile ) 'HA ) ( CountAces ( rest pile ) ( + playerScore 1 ) ) )
+		  (( eq (first pile ) 'SA ) ( CountAces ( rest pile ) ( + playerScore 1 ) ) )
+		  (t (CountAces ( rest pile ) playerScore ) ) ) ) )
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; Function Name: CalculateScore
+; Purpose: To calculate a player's score and check who has the ten of diamonds, 2 of spades, and how many aces
+; Parameters:
+;	passedPile, a player's pile
+;	passedPlayerScore, a player's score
+;	passedScoreCounter, a count for keeping track of what to check next
+; Return Value: A player's score after checking the different things that can get them points
+; Local Variables: 
+;	playerPile, holds the player's pile
+;	playerScore, holds the player's score
+;	scoreCounter, holds the counter for what to do next
+; Algorithm: 
+;	1) If score counter is equal to 1, check if the player has the ten of diamonds
+;  	2) If score counter is equal to 2, check if the player has the two of spades
+;	3) If score counter is equal to 3, check for how many aces a player has
+; 	4) If score counter is equal to 4, return with the new score counter for that player
+; Assistance Received: none 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;	  
+(defun CalculateScore ( passedPlayerPile passed playerScore passedScoreCounter)
+
+	(Let* (( playerPile passedPlayerPile )
+		  ( playerScore passedPlayerScore )
+		  ( scoreCounter passedScoreCounter ))
+	
+	; Look for the 10 of diamonds
+	(cond (( eq scoreCounter 1 ) ( CalculateScore playerPile ( TenDiamonds playerPile 0 ) ( + scoreCounter 1 ) ) )
+		  (( eq scoreCounter 2 ) (CalculateScore playerPile ( TwoSpades playerPile 0 ) ( + scoreCounter 1 ) ) )
+		  (( eq scoreCounter 3 ) (CalculateScore playerPile ( CountAces playerPile ) ( + scoreCounter 1 ) ) )
+		  (( eq scoreCounter 4 ) playerScore ) ) ) )
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; Function Name: CheckWhoHasMoreSpades
+; Purpose: To figure out which player has more spades and give them a point
+; Parameters:
+;	passedPlayerPiles, both of the player's piles
+;	passedHumanNumSpades, a player's number of spades
+;	passedComputerNumSpades, a computer's number of spades
+;	passedCounter, a count for knowing where I am at in checking the number of spades
+; Return Value: Returns "Human" if they had more spades, "Computer" if they had more, or "Neither" if they were even
+; Local Variables: 
+;	playerPiles, holds the player's piles
+;	humanNumSpades, holds the number of spades the human has
+;	computerNumSpades, holds the number of spades the computer has
+;	counter, just a counter for keeping track of what to do next
+; Algorithm: 
+;	1) WORK IN PROGRESS
+; Assistance Received: none 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun CheckWhoHasMoreSpades ( passedPlayerPiles passedHumanNumSpades passedComputerNumSpades passedCounter)
+
+	(Let* (( playerPiles passedPlayerPiles )
+		  ( humanNumSpades passedHumanNumSpades )
+		  ( computerNumSpades passedComputerNumSpades )
+		  ( counter passedCounter ) ) ) )
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; Function Name: CountCards
+; Purpose: To count the number of cards a player has
+; Parameters:
+;	passedPlayerPile, a player's pile
+;	passedCardCount, the number of cards for the player
+; Return Value: The number of cards a player has
+; Local Variables: 
+;	playerPile, holds the player's pile
+;	cardCount, holds the count of a cards a player has
+; Algorithm: 
+;	1) If the players pile is the empty list, then return the count of the cards
+;  	2) Otherwise, recursively call CountCards and decrement the playerPile and increment the card count by 1
+; Assistance Received: none 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun CountCards ( passedPlayerPile passedCardCount )
+
+	(Let* (( playerPile passedPlayerPile )
+		  ( cardCount passedCardCount ))
+	
+	(cond ((eq playerPile ()) cardCount )
+		  (t (CountCards ( rest playerPile ) ( + cardCount 1 ) ) ) ) ) )
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; Function Name: CheckWhoHasMoreCards
+; Purpose: To check which player has more cards
+; Parameters:
+;	passedPlayerPiles, the player's pile
+;	passedHumanNumCards, the number of cards for the human player
+;	passedComputerNumCards, the number of cards for the computer player
+;	passedCounter, a counter to keep track of where we are at in the function
+; Return Value: The player with the most cards, either "Human", "Computer", or "Neither"
+; Local Variables: 
+;	playerPiles, holds the player's pile
+;	humanNumCards, holds the count of a humans cards
+;	computerNumCards, holds the count of a computers cards
+;	counter, holds the counter of where the function is at
+; Algorithm: 
+;	1) If the counter is equal to 1, get the number of cards the human has
+;  	2) If the counter is equal to 2, get the number of cards the computer has
+;	3) Then check if the human has more cards that the computer, the computer has more cards
+;	than the human, or if they have the same number of cards, and return that
+; Assistance Received: none 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun CheckWhoHasMoreCards (passedPlayerPiles passedHumanNumCards passedComputerNumCards passedCounter)
+
+	(Let* (( playerPiles passedPlayerPiles )
+		  ( humanNumCards passedHumanNumCards )
+		  ( computerNumCards passedComputerNumCards )
+		  ( counter passedCounter ))
+		  
+	(cond ((eq counter 1) (CheckWhoHasMoreCards playerPiles ( CountCards ( first playerPiles ) 0 ) computerNumCards ( + counter 1 ) ) )
+		  (( eq counter 2 ) ( CheckWhoHasMoreCards playerPiles humanNumCards ( CountCards ( rest playerPiles ) 0 ) ( + counter 1 ) ) )
+		  (( < humanNumCards computerNumCards ) "Human" )
+		  (( > humanNumCards computerNumCards ) "Computer" )
+		  (( eq humanNumCards computerNumCards ) "Neither" ) ) ) )
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; Function Name: PlayTournament
 ; Purpose: To play through a tournament of casino
 ; Parameters:
@@ -377,12 +578,14 @@
 ;	passedComputerScore, the score for the computer player
 ;	passedroundCounter, the counter for how many rounds there has been
 ;	passedPile, contains two lists of the players piles, the first is the human, the second is the computer
+;	passedTallyScore, kind of like a boolean value, if the scores need to be tallied, this will be "True", otherwise "False"
 ; Return Value: None
 ; Local Variables: 
 ;   humanScore, holds the human's score for the tournament
 ;	computerScore, holds the computer's score for the tournament
 ;	roundCounter, holds the current round they are on
 ;	pile, holds the piles for each of the players in a lists with two sub lists, the first is the human's, the second is the computer's
+; 	tallyScore, holds either "True" or "False" if the scores need to be tallied
 ; Algorithm: 
 ;	1) 
 ;  	2)
@@ -390,27 +593,31 @@
 ; 	4)
 ; Assistance Received: none 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun PlayTournament ( passedHumanScore passedComputerScore passedRoundCounter passedPile )
+(defun PlayTournament ( passedHumanScore passedComputerScore passedRoundCounter passedPile passedTallyScore)
 
 	(Let* (( humanScore passedHumanScore )
 	   ( computerScore passedComputerScore )
 	   ( roundCounter passedRoundCounter )
-	   ( pile passedPile ))
+	   ( pile passedPile )
+	   ( tallyScore passedTallyScore ))
 	   
 	( PlayRound (ActualDeck (loadDeck)) () () () (FirstPlayer) () 1)
 	
 	
 	; If the human and computer scores are the same and the human's score is greater than 21, then we have a tie!
 	(cond ( and ( eq humanScore computerScore )
-				( >= huamnScore 21 ) ( print "It's a tie!" ) ) )
+				( >= huamnScore 21 ) ( print "It's a tie!" ) )
 				
-	; If the human score is greater or equal to 21 and the computer's score is less than 21, then the human won!
-	( cond ( and ( >= humanScore 21 ) 
-				 ( < computerScore 21 ) ( print "You won!" ) ) )
+				; If the human score is greater or equal to 21 and the computer's score is less than 21, then the human won!
+		  ( and ( >= humanScore 21 ) 
+				 ( < computerScore 21 ) ( print "You won!" ) ) 
 	
-	; If the computer score is greater or equal to 21 and the human's score is less than 21, then the computer won!
-	( cond ( and ( >= computerScore 21) 
-				 ( < humanScore 21) (print "The computer won.") ) )
+		  ; If the computer score is greater or equal to 21 and the human's score is less than 21, then the computer won!
+		  ( and ( >= computerScore 21) 
+				 ( < humanScore 21) (print "The computer won.") ) 
+				
+		  ; If no one won the game yet, play a round, increment the score, and get the player's piles from the round
+		  (t (PlayTournament humanScore computerScore (+ roundCounter 1) (PlayRound (ActualDeck (loadDeck)) () () () (FirstPlayer) () 1) "True" ) ) ) ) )
 	
 		  
 
