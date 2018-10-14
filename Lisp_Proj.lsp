@@ -108,8 +108,6 @@
 '( (CA) (DA) (HA) (SA) (C2) (D2) (H2) (S2) (C3) (D3) (H3) (S3) (C4) (D4) (H4) (S4) (C5) (D5) (H5) (S5) (C6) (D6) (H6) (S6) (C7) (D7) (H7) (S8) 
 (C8) (D8) (H8) (S8) (C9) (D9) (H9) (S9) (CX) (DX) (HX) (SX) (CJ) (DJ) (HJ) (SJ) (CQ) (DQ) (HQ) (SQ) (CK) (DK) (HK) (SK)) )
 
-(print (LoadDeck))
-
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; Function Name: ActualDeck
@@ -297,18 +295,18 @@
 ;	passedHumanHand, the cards for the human hand
 ;	passedComputerHand, the cards for the computer hand
 ;	passedTable, the cards on the table
-;	passedFirstPlayer, the first player, whoever won the coin toss
 ;	passedNextPlayer, the next player who is supposed to go
 ;	passedRoundCycle, how many times the function has been recursively called
+;	passedPlayerMove, the move the play wants to make, along with the card they want to use
 ; Return Value: None as of right now since it is not finished
 ; Local Variables: 
 ;   deck, holds the current deck of the round
 ;	humanHand, holds the current hand of the human
 ;	computerHand, holds the current hand of the computer
 ;	table, holds the cards on the table
-;	firstPlayer, holds the player who won the coin toss
 ;	nextPlayer, holds the next player who is supposed to player
 ;	roundCycle, holds the current recursive call of the round
+;	playerMove, holds the list which makes up the move the player is making and the card they want to use
 ; Algorithm: 
 ;	1) 
 ;  	2)
@@ -316,57 +314,52 @@
 ; 	4)
 ; Assistance Received: none 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun PlayRound ( passedDeck passedHumanHand passedComputerHand passedTable passedFirstPlayer passedNextPlayer passedRoundCycle )
+(defun PlayRound ( passedDeck passedHumanHand passedComputerHand passedTable passedNextPlayer passedRoundCycle passedPlayerMove&Card passedPlayerMove passedPlayerCard )
 
 	( Let* (( deck passedDeck )
 			( humanHand passedHumanHand )
 			( computerHand passedComputerHand )
 			( table passedTable )
-			( firstPlayer passedFirstPlayer )
 			( nextPlayer passedNextPlayer )
-			( roundCycle passedRoundCycle ) )
+			( roundCycle passedRoundCycle ) 
+			( playerMove&Card passedPlayerMove&Card )
+			( playerMove passedPlayerMove )
+			( playerCard passedPlayerCard ) )
 			
-			(print table)
 			
 	; If this is a brand new game, we need to deal cards to the player
 	( cond (( eq roundCycle 1)
-		   ( PlayRound deck (GetFourCards deck 4 ()) computerHand table firstPlayer nextPlayer (+ roundCycle 1))))
+		   ( PlayRound deck (GetFourCards deck 4 ()) computerHand table nextPlayer (+ roundCycle 1) () playerMove playerCard )))
 		   
 	; Then remove the first four cards from the deck
 	( cond (( eq roundCycle 2)
-		   ( PlayRound ( SubtractCardsFromDeck deck 4) humanHand computerHand table firstPlayer nextPlayer (+ roundCycle 1))))
+		   ( PlayRound ( SubtractCardsFromDeck deck 4) humanHand computerHand table nextPlayer (+ roundCycle 1) () playerMove playerCard )))
 		 
 	; Then deal four cards to the computer
 	( cond ((eq roundCycle 3)
-		   ( PlayRound deck humanHand (GetFourCards deck 4 ()) table firstPlayer nextPlayer (+ roundCycle 1))))
+		   ( PlayRound deck humanHand (GetFourCards deck 4 ()) table nextPlayer (+ roundCycle 1) () playerMove playerCard )))
 		
 	; Then remove the first four cards from the deck
 	( cond ((eq roundCycle 4)
-		   ( PlayRound ( SubtractCardsFromDeck deck 4) humanHand computerHand table firstPlayer nextPlayer (+ roundCycle 1))))
+		   ( PlayRound ( SubtractCardsFromDeck deck 4) humanHand computerHand table nextPlayer (+ roundCycle 1) () playerMove playerCard )))
 	
 	; Then deal four cards to the table
 	( cond ((eq roundCycle 5)
-		   ( PlayRound deck humanHand computerHand (GetFourCards deck 4 ()) firstPlayer nextPlayer (+ roundCycle 1))))
+		   ( PlayRound deck humanHand computerHand (GetFourCards deck 4 ()) nextPlayer (+ roundCycle 1) () playerMove playerCard )))
 		
 	; Then finally remove the first four cards from the table
 	( cond ((eq roundCycle 6)
-		   ( PlayRound ( SubtractCardsFromDeck deck 4) humanHand computerHand table firstPlayer nextPlayer (+ roundCycle 1))))
+		   ( PlayRound ( SubtractCardsFromDeck deck 4) humanHand computerHand table nextPlayer (+ roundCycle 1) () playerMove playerCard )))
 	
-	; Check if the human goes first or the computer goes first and then it will call a function
-	; for that player to make a move
-	( cond (( eq nextPlayer "Human" ) ( HumanMakeMove ) ( nextPlayer "Computer" ))
-		  (( eq nextPlayer "Computer" ) ( computerMakeMove ) ( nextPlayer "Human" )))
+	; If the next player is the human, then they will go first...
+	(print nextPlayer)
+	( cond (( equal nextPlayer "Human" ) ( PlayRound deck humanHand computerHand table "Computer" (+ roundCycle 1) (HumanMakeMove humanHand table ) playerMove playerCard ) ) )
 	
-	; Once the first player makes a move, not its time for the second player	
-	( cond (( eq nextPlayer "Human" ) ( humanMakeMove ) ( nextPlayer "Computer" ))
-		   ( eq nextPlayer "Computer" ) ( computerMakeMove ) ( nextPlayer "Human" ))
+	; Otherwise, then the computer will go first...	
+	( cond (( eq nextPlayer "Computer" ) ( humanMakeMove ) ( nextPlayer "Human" )))
 		   
-	( PlayRound deck humanHand computerHand table firstPlayer nextPlayer (+ roundCycle 1) ) ) )
+	( PlayRound deck humanHand computerHand table nextPlayer (+ roundCycle 1) () playerMove playerCard ) ) )
 	
-	
-; This starts the round of the game
-; Passing in: the deck,   humanHand, computerHand, table, firstPlayer, next player, and the round cycle
-(PlayRound (ActualDeck (loadDeck)) () () () (FirstPlayer) () 1)
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -627,16 +620,30 @@
 				( eq tallyScoreCounter 2 ) ( PlayTournament humanScore computerScore roundCounter pile tallyScore 
 				( + tallyScoreCounter 1 ) "Neither" (CheckWhoHasMoreSpades pile 0 0 1 ) ) )
 				
+		  ; If the human had more spades, give them a point...
 		  ( and ( eq tallyScore "True" )
 				( eq moreSpadePlayer "Human" ) (PlayTournament ( + humanScore 1 ) computerScore roundCounter pile tallyScore tallyScoreCounter "Neither" "Neither" ) )
 				
+		  ; If the computer had more spades, give them a point
 		  ( and ( eq tallyScore "True" )
-				( eq tallyScoreCounter 3 ) ( PlayTournament 
+				( eq moreSpadePlayer "Computer" ) (PlayTournament humanScore ( + computerScore 1 ) roundCounter pile tallyScore tallyScoreCounter
+				"Neither" "Neither") )
+			
+		  ; Now we need to calculate the rest of the ways to earn points for the human...
+		  ( and ( eq tallyScore "True" )
+				( eq tallyScoreCounter 3 ) ( PlayTournament (+ humanScore (CalculateScore (first pile) 0 1)) computerScore roundCounter pile tallyScore
+				(+ tallyScoreCounter 1) "Neither" "Neither") )
+				
+		  ; Now we need to calculate the rest of the ways to earn points for the computer...
+		  ( and ( eq tallyScore "True" )
+				( eq tallyScoreCounter 4 ) (PlayTournament humanScore (+ computerScore (CalculateScore (rest pile) 0 1)) roundCounter pile "False"
+				(+ tallyScoreCounter 1) "Neither" "Neither") )
 	
+		  ; Check if it was a tie between the players
 		  ( and ( eq humanScore computerScore )
 				( >= huamnScore 21 ) ( print "It's a tie!" ) )
 				
-				; If the human score is greater or equal to 21 and the computer's score is less than 21, then the human won!
+		  ; If the human score is greater or equal to 21 and the computer's score is less than 21, then the human won!
 		  ( and ( >= humanScore 21 ) 
 				 ( < computerScore 21 ) ( print "You won!" ) ) 
 	
@@ -645,7 +652,12 @@
 				 ( < humanScore 21) (print "The computer won.") ) 
 				
 		  ; If no one won the game yet, play a round, increment the score, and get the player's piles from the round
-		  (t (PlayTournament humanScore computerScore (+ roundCounter 1) (PlayRound (ActualDeck (loadDeck)) () () () (FirstPlayer) () 1) "True" ) ) ) ) )
+		  (t (PlayTournament humanScore computerScore (+ roundCounter 1) (PlayRound (ActualDeck (loadDeck)) () () () (FirstPlayer) 1 () () () ) "True"  1) ) ) ) )
+		  
+	
+(print "Hello")	
+(PlayTournament 0 0 1 (PlayRound (ActualDeck (loadDeck)) () () () (FirstPlayer) 1 () () () ) "True" 1 "Neither" "Neither")
+
 	
 		  
 
