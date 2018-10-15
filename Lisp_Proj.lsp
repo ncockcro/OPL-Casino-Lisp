@@ -143,7 +143,7 @@
 	(cond (( eq count 0 ) 
 			fourCards )
 		  ( t ( GetFourCards 
-		  ( rest deckOfCards ) ( - count 1 ) ( append fourCards ( first deckOfCards )) )) ) )
+		  ( rest deckOfCards ) ( - count 1 ) ( append fourCards (list ( first deckOfCards ) )) )) ) )
 	
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; Function Name: SubtractCardsFromDeck
@@ -219,12 +219,12 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun CheckTrail (playerCard playerHand)
 
-
-	(cond (( eq playerCard ( first playerHand )) 
+	(print (first (first playerHand)))
+	(cond (( eq playerCard (first ( first playerHand ) ) ) 
 			"True" )
 		  (( eq playerHand () )
 			"False")
-		  (( CheckTrail pCard ( rest playerHand ) )) ) )
+		  (( CheckTrail playerCard ( rest playerHand ) )) ) )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; Function Name: MakeTrail
@@ -284,9 +284,59 @@
 				( cond (( equal (MakeTrail hand table ) 
 						"False" ) ( HumanMakeMove hand table ))
 						( t ( list playerMove ( MakeTrail hand table ) )) ) )) ) )
+			
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; Function Name: RemoveTrailFromHand
+; Purpose: To remove a card the player trailed with from their hand
+; Parameters:
+;	passedHand, the current hand of a player
+;	passedTrailCard, the trail card to be added to the table
+;	passedNewHand, comes in as an empty list and will be used as the new hand for the player
+; Return Value: The new table list with the trail card added
+; Local Variables:
+;	hand, holds the player's current hand
+;	trailCard, holds the card the player used to trail with
+;	newHand, holds the new hand for the player
+; Algorithm: 
+;	1) If the current hand is equal to the empty list, return the new hand
+;	2) If the current card in hand equals to the trail card, dont add it to the new hand
+;	3) If neither of the other statements were true, decrement the hand and add the current card to the new hand
+; Assistance Received: none 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun RemoveTrailFromHand (passedHand passedTrailCard passedNewHand)
+
+		(Let* ((hand passedHand)
+			   (trailCard passedTrailCard)
+			   (newHand passedNewHand))
+			   
+		; If the hand is empty, then we have cycled through everything and can return the new hand
+		(cond ((eq hand () ) newHand )
+		
+			  ; If the current card were looking at is the new card, don't add it to the new hand list
+			  ((eq (first hand) trailCard) (RemoveTrailFromHand (rest hand) trailCard newHand) )
+			 
+			  ; If neither of the either statements were true, add the current card to the new hand and decrement the old hand
+			  (t (RemoveTrailFromHand (rest hand) trailCard (append passedNewHand (first hand) ) ) ) ) ) )
+	
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; Function Name: AddTrailToTable
+; Purpose: To add a trail card to the table in a round
+; Parameters:
+;	passedTable, the current table in a round
+;	passedTrailCard, the trail card to be added to the table
+; Return Value: The new table list with the trail card added
+; Local Variables: None
+; Algorithm: 
+;	1) Return the new appended list with the trail card added
+; Assistance Received: none 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;	
+(defun AddTrailToTable (passedTable passedTrailCard)
+
+	( append passedTable passedTrailCard ) )	   
+	
 
 
-; Computer Moves
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; Function Name: PlayRound
 ; Purpose: To serve as the main game loop for playing a round
@@ -326,6 +376,8 @@
 			( playerMove passedPlayerMove )
 			( playerCard passedPlayerCard ) )
 			
+	(print humanHand)
+			
 			
 	; If this is a brand new game, we need to deal cards to the player
 	( cond (( eq roundCycle 1)
@@ -351,14 +403,34 @@
 	( cond ((eq roundCycle 6)
 		   ( PlayRound ( SubtractCardsFromDeck deck 4) humanHand computerHand table nextPlayer (+ roundCycle 1) () playerMove playerCard )))
 	
-	; If the next player is the human, then they will go first...
-	(print nextPlayer)
-	( cond (( equal nextPlayer "Human" ) ( PlayRound deck humanHand computerHand table "Computer" (+ roundCycle 1) (HumanMakeMove humanHand table ) playerMove playerCard ) ) )
+	; If the next player is the human, then they will go...
+	( cond (( eq roundCycle 7 ) 
+			(cond (( equal nextPlayer "Human" ) ( PlayRound deck humanHand computerHand table "Computer" 
+												(+ roundCycle 1) (HumanMakeMove humanHand table ) playerMove playerCard ) ) ) ) )
 	
-	; Otherwise, then the computer will go first...	
-	( cond (( eq nextPlayer "Computer" ) ( humanMakeMove ) ( nextPlayer "Human" )))
+	;Otherwise, then the computer will go...	
+	( cond (( eq roundCycle 7 ) 
+		(cond (( eq nextPlayer "Computer" ) ( humanMakeMove ) ( nextPlayer "Human" ))) ) )
+		
+	; Now, if the move the player chose is a trail, we need to add the card to the table...
+	( cond (( eq roundCycle 8 )
+			(cond (( eq (first playerMove&Card) 't ) ( PlayRound deck humanHand computerHand (AddTrailToTable table (rest playerMove&Card) ) nextPlayer
+												 (+ roundCycle 1) playerMove&Card playerMove playerCard ) ) ) ) )
+		
+
+
+	; If the next player is "computer", then we know the human just made the last move and must change their hand depending on what they
+	; did. In this case, this is checking if the player trailed, and will remove the trail card from their hand
+	( cond (( eq roundCycle 9 )
+			(cond (( equal nextPlayer "Computer" )
+					(cond (( eq (first playerMove&Card) 'T ) 
+												( PlayRound deck (RemoveTrailFromHand humanHand (first (rest playerMove&Card) ) () )
+												computerHand table nextPlayer (+ roundCycle 1)
+												playerMove&Card playerMove playerCard ) ) ) ) ) ) )
+				 
+	( print humanHand ) ) )
 		   
-	( PlayRound deck humanHand computerHand table nextPlayer (+ roundCycle 1) () playerMove playerCard ) ) )
+	;( PlayRound deck humanHand computerHand table nextPlayer (+ roundCycle 1) () playerMove playerCard ) ) )
 	
 
 
