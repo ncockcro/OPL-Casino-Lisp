@@ -284,6 +284,65 @@
 				( cond (( equal (MakeTrail hand table ) 
 						"False" ) ( HumanMakeMove hand table ))
 						( t ( list playerMove ( MakeTrail hand table ) )) ) )) ) )
+						
+						
+	
+	
+(defun ComputerMakeTrail ( passedHand passedTable passedTrailCard )
+
+
+	(Let* (( hand passedHand )
+		   ( table passedTable )
+		   ( trailCard passedTrailCard ) )
+		   
+	(print hand)
+	(print trailCard)
+	(print (first hand)  )
+		   
+	(cond ((eq hand () ) trailCard )
+		  (( < (first (rest (first hand) ) ) (first (rest trailCard ) ) )
+		  ( ComputerMakeTrail (rest hand) table (first (rest (first hand) ) ) ) )
+		  ( t (ComputerMakeMove (rest hand) table trailCard ) ) ) ) )
+		   
+		   
+	
+	
+(defun ComputerGetMoveChoice () 
+
+'t )	
+						
+						
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; Function Name: ComputerMakeMove
+; Purpose: To remove a card the player trailed with from their hand
+; Parameters:
+;	passedHand, the current hand of a player
+;	passedTrailCard, the trail card to be added to the table
+;	passedNewHand, comes in as an empty list and will be used as the new hand for the player
+; Return Value: The new table list with the trail card added
+; Local Variables:
+;	hand, holds the player's current hand
+;	trailCard, holds the card the player used to trail with
+;	newHand, holds the new hand for the player
+; Algorithm: 
+;	1) If the current hand is equal to the empty list, return the new hand
+;	2) If the current card in hand equals to the trail card, dont add it to the new hand
+;	3) If neither of the other statements were true, decrement the hand and add the current card to the new hand
+; Assistance Received: none 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;					
+(defun ComputerMakeMove ( passedComputerHand passedTable )
+
+	(Let* (( playerMove ( ComputerGetMoveChoice ) )
+		   ( computerHand passedComputerHand )
+		   ( table passedTable) )
+		   
+	(cond (( eq playerMove 'b )
+		  ( print "Computer is not making a build" ) )
+		  (( eq playerMove 'c )
+	      ( print "The computer is capturing" ) )
+		  (( eq playerMove 't )
+			(cond (t (list playerMove ( ComputerMakeTrail computerHand table (list 20) ) ) ) ) ) ) ) )
+		   
 			
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -346,8 +405,7 @@
 ;	passedComputerHand, the cards for the computer hand
 ;	passedTable, the cards on the table
 ;	passedNextPlayer, the next player who is supposed to go
-;	passedRoundCycle, how many times the function has been recursively called
-;	passedPlayerMove, the move the play wants to make, along with the card they want to use
+;	passedFirstGame, either "True" or "False", an indicated for if we need to deal cards to the table or not
 ; Return Value: None as of right now since it is not finished
 ; Local Variables: 
 ;   deck, holds the current deck of the round
@@ -355,8 +413,7 @@
 ;	computerHand, holds the current hand of the computer
 ;	table, holds the cards on the table
 ;	nextPlayer, holds the next player who is supposed to player
-;	roundCycle, holds the current recursive call of the round
-;	playerMove, holds the list which makes up the move the player is making and the card they want to use
+;	firstGame, holds either "True" or "False" indicating if we need to deal cards to the table or not
 ; Algorithm: 
 ;	1) 
 ;  	2)
@@ -364,7 +421,7 @@
 ; 	4)
 ; Assistance Received: none 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun PlayRound ( passedDeck passedHumanHand passedComputerHand passedTable passedNextPlayer passedRoundCycle passedPlayerMove&Card passedPlayerMove passedPlayerCard )
+(defun PlayRound ( passedDeck passedHumanHand passedComputerHand passedTable passedNextPlayer passedRoundCycle passedPlayerMove&Card passedFirstGame )
 
 	( Let* (( deck passedDeck )
 			( humanHand passedHumanHand )
@@ -373,60 +430,88 @@
 			( nextPlayer passedNextPlayer )
 			( roundCycle passedRoundCycle ) 
 			( playerMove&Card passedPlayerMove&Card )
-			( playerMove passedPlayerMove )
-			( playerCard passedPlayerCard ) )
+			( firstGame passedFirstGame ) )
 			
 	(print humanHand)
 			
 			
 	; If this is a brand new game, we need to deal cards to the player
 	( cond (( eq roundCycle 1)
-		   ( PlayRound deck (GetFourCards deck 4 ()) computerHand table nextPlayer (+ roundCycle 1) () playerMove playerCard )))
+		   ( PlayRound deck (GetFourCards deck 4 ()) computerHand table nextPlayer (+ roundCycle 1) () firstGame )) )
 		   
 	; Then remove the first four cards from the deck
 	( cond (( eq roundCycle 2)
-		   ( PlayRound ( SubtractCardsFromDeck deck 4) humanHand computerHand table nextPlayer (+ roundCycle 1) () playerMove playerCard )))
+		   ( PlayRound ( SubtractCardsFromDeck deck 4) humanHand computerHand table nextPlayer (+ roundCycle 1) () firstGame )))
 		 
 	; Then deal four cards to the computer
 	( cond ((eq roundCycle 3)
-		   ( PlayRound deck humanHand (GetFourCards deck 4 ()) table nextPlayer (+ roundCycle 1) () playerMove playerCard )))
+		   ( PlayRound deck humanHand (GetFourCards deck 4 ()) table nextPlayer (+ roundCycle 1) () firstGame )))
 		
 	; Then remove the first four cards from the deck
 	( cond ((eq roundCycle 4)
-		   ( PlayRound ( SubtractCardsFromDeck deck 4) humanHand computerHand table nextPlayer (+ roundCycle 1) () playerMove playerCard )))
+		   ( PlayRound ( SubtractCardsFromDeck deck 4) humanHand computerHand table nextPlayer (+ roundCycle 1) () firstGame )))
 	
 	; Then deal four cards to the table
 	( cond ((eq roundCycle 5)
-		   ( PlayRound deck humanHand computerHand (GetFourCards deck 4 ()) nextPlayer (+ roundCycle 1) () playerMove playerCard )))
+		(cond ((equal firstGame "True")
+		   ( PlayRound deck humanHand computerHand (GetFourCards deck 4 ()) nextPlayer (+ roundCycle 1) () firstGame ))) ) )
+		   
+	; If it is not the first game, then we want to skip adding cards to the table and just increment the round counter
+	( cond ((eq roundCycle 5)
+		(cond ((equal firstGame "False")
+			( PlayRound deck humanHand computerHand table nextPlayer (+ roundCycle 1) () firstGame ) ) ) ) )
 		
 	; Then finally remove the first four cards from the table
 	( cond ((eq roundCycle 6)
-		   ( PlayRound ( SubtractCardsFromDeck deck 4) humanHand computerHand table nextPlayer (+ roundCycle 1) () playerMove playerCard )))
+		(cond ((equal firstGame "True" )
+		   ( PlayRound ( SubtractCardsFromDeck deck 4) humanHand computerHand table nextPlayer (+ roundCycle 1) () "False" ))) ) )
+		   
+	; This condition exists if it is not the first time playing in a round and we dont want to deal cards to the table
+	( cond ((eq roundCycle 6)
+		(cond ((equal firstGame "False" )
+			( PlayRound (deck humanHand computerHand table nextPlayer (+ roundCycle 1) () firstGame) ) ) ) ) )
 	
 	; If the next player is the human, then they will go...
 	( cond (( eq roundCycle 7 ) 
 			(cond (( equal nextPlayer "Human" ) ( PlayRound deck humanHand computerHand table "Computer" 
-												(+ roundCycle 1) (HumanMakeMove humanHand table ) playerMove playerCard ) ) ) ) )
+												(+ roundCycle 1) (HumanMakeMove humanHand table ) firstGame ) ) ) ) )
 	
 	;Otherwise, then the computer will go...	
 	( cond (( eq roundCycle 7 ) 
-		(cond (( eq nextPlayer "Computer" ) ( humanMakeMove ) ( nextPlayer "Human" ))) ) )
+		(cond (( equal nextPlayer "Computer" ) ( PlayRound deck humanHand computerHand table "Human" (+ roundCycle 1) 
+												(ComputerMakeMove computerHand table ) firstGame ) ) ) ) )
 		
 	; Now, if the move the player chose is a trail, we need to add the card to the table...
 	( cond (( eq roundCycle 8 )
 			(cond (( eq (first playerMove&Card) 't ) ( PlayRound deck humanHand computerHand (AddTrailToTable table (rest playerMove&Card) ) nextPlayer
-												 (+ roundCycle 1) playerMove&Card playerMove playerCard ) ) ) ) )
+												 (+ roundCycle 1) playerMove&Card firstGame ) ) ) ) )
 		
 
-
-	; If the next player is "computer", then we know the human just made the last move and must change their hand depending on what they
+	; If the next player is "Computer", then we know the human just made the last move and must change their hand depending on what they
 	; did. In this case, this is checking if the player trailed, and will remove the trail card from their hand
 	( cond (( eq roundCycle 9 )
 			(cond (( equal nextPlayer "Computer" )
 					(cond (( eq (first playerMove&Card) 'T ) 
 												( PlayRound deck (RemoveTrailFromHand humanHand (first (rest playerMove&Card) ) () )
 												computerHand table nextPlayer (+ roundCycle 1)
-												playerMove&Card playerMove playerCard ) ) ) ) ) ) )
+												playerMove&Card firstGame ) ) ) ) ) ) )
+												
+	; If the next player is "Human", then we know the computer just made the last move and must change their hand depending on what they
+	; did. In this case, this is checking if the player trailed, and will remove the trail card from their hand
+	( cond (( eq roundCycle 9 )
+			(cond (( equal nextPlayer "Human" )
+					(cond (( eq (first playerMove&Card) 'T ) 
+												( PlayRound deck humanHand (RemoveTrailFromHand computerHand (first (rest playerMove&Card) ) () )
+												table nextPlayer (+ roundCycle 1)
+												playerMove&Card firstGame ) ) ) ) ) ) )
+												
+												
+	; After a player has made a move and the player's hand and table is properly adjusted, we need to check if the player's hands
+	; are empty and if we need to deal move cards
+	( cond (( eq roundCycle 10 )
+			(cond ((eq humanHand ())
+				(cond ((eq computerHand ())
+					(cond (( /= deck ()) (PlayRound deck humanHand computerHand table nextPlayer 1 playerMove&Card firstGame) ) ) ) ) ) ) ) )
 				 
 	( print humanHand ) ) )
 		   
@@ -724,11 +809,10 @@
 				 ( < humanScore 21) (print "The computer won.") ) 
 				
 		  ; If no one won the game yet, play a round, increment the score, and get the player's piles from the round
-		  (t (PlayTournament humanScore computerScore (+ roundCounter 1) (PlayRound (ActualDeck (loadDeck)) () () () (FirstPlayer) 1 () () () ) "True"  1) ) ) ) )
+		  (t (PlayTournament humanScore computerScore (+ roundCounter 1) (PlayRound (ActualDeck (loadDeck)) () () () (FirstPlayer) 1 () "True" ) "True"  1) ) ) ) )
 		  
 	
-(print "Hello")	
-(PlayTournament 0 0 1 (PlayRound (ActualDeck (loadDeck)) () () () (FirstPlayer) 1 () () () ) "True" 1 "Neither" "Neither")
+(PlayTournament 0 0 1 (PlayRound (ActualDeck (loadDeck)) () () () (FirstPlayer) 1 () "True" ) "True" 1 "Neither" "Neither")
 
 	
 		  
