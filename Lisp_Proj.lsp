@@ -105,8 +105,8 @@
 ; Assistance Received: none 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun LoadDeck ()
-'( (CA) (DA) (HA) (SA) (C2) (D2) (H2) (S2) (C3) (D3) (H3) (S3) (C4) (D4) (H4) (S4) (C5) (D5) (H5) (S5) (C6) (D6) (H6) (S6) (C7) (D7) (H7) (S8) 
-(C8) (D8) (H8) (S8) (C9) (D9) (H9) (S9) (CX) (DX) (HX) (SX) (CJ) (DJ) (HJ) (SJ) (CQ) (DQ) (HQ) (SQ) (CK) (DK) (HK) (SK)) )
+'( CA DA HA SA C2 D2 H2 S2 C3 D3 H3 S3 C4 D4 H4 S4 C5 D5 H5 S5 C6 D6 H6 S6 C7 D7 H7 S8 
+C8 D8 H8 S8 C9 D9 H9 S9 CX DX HX SX CJ DJ HJ SJ CQ DQ HQ SQ CK DK HK SK) )
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -219,8 +219,8 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun CheckTrail (playerCard playerHand)
 
-	(print (first (first playerHand)))
-	(cond (( eq playerCard (first ( first playerHand ) ) ) 
+	(print (first playerHand))
+	(cond (( eq playerCard ( first playerHand ) ) 
 			"True" )
 		  (( eq playerHand () )
 			"False")
@@ -286,8 +286,60 @@
 						( t ( list playerMove ( MakeTrail hand table ) )) ) )) ) )
 						
 						
+						
+						
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; Function Name: CardValue
+; Purpose: Get the card value of a card (such as given a card "CX", it will return 10)
+; Parameters:
+;	card, holds the card that was passed in
+; Return Value: The number value of a card
+; Local Variables: 
+;   stringCard, holds the same card but in string form
+; Algorithm: 
+;	1) Check which number the card is equal to and return the number value
+; Assistance Received: none 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun CardValue ( card )
+
+
+	(Let* (( stringCard (string card) ) )
 	
 	
+	(cond (( eq (char stringCard 1 ) '#\A) '1 )
+		  (( eq (char stringCard 1 ) '#\2) '2 )
+		  (( eq (char stringCard 1 ) '#\3) '3 ) 
+		  (( eq (char stringCard 1 ) '#\4) '4 ) 
+		  (( eq (char stringCard 1 ) '#\5) '5 )
+		  (( eq (char stringCard 1 ) '#\6) '6 ) 
+		  (( eq (char stringCard 1 ) '#\7) '7 )
+		  (( eq (char stringCard 1 ) '#\8) '8 )
+		  (( eq (char stringCard 1 ) '#\9) '9 )
+		  (( eq (char stringCard 1 ) '#\X) '10)
+		  (( eq (char stringCard 1 ) '#\J) '11)
+		  (( eq (char stringCard 1 ) '#\Q) '12)
+		  (( eq (char stringCard 1 ) '#\K) '13) ) ) )
+	
+						
+	
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; Function Name: ComputerMakeTrail
+; Purpose: To have the computer trail with their lowest card
+; Parameters:
+;	passedHand, holds the hand of the computer
+;	passedTable, holds the current table on the board
+;	passedTrailCard, holds the current card the computer will trail with
+; Return Value: A card for the computer to trail with
+; Local Variables: 
+;   hand, holds the computer's current hand
+;	table, holds the current table
+;	trailCard, holds the card the computer will trail with
+; Algorithm: 
+;	1) If the hand is equal to the empty set, then we've gone through all of the computer's hand cards and can return
+;	2) If the computer's trail card is greater than the current card in the hand, make that current card the new trail card
+;	3) If neither of the above statements were true, reduce the hand size and check for the rest of the cards if one is lower
+; Assistance Received: none 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;	
 (defun ComputerMakeTrail ( passedHand passedTable passedTrailCard )
 
 
@@ -295,18 +347,28 @@
 		   ( table passedTable )
 		   ( trailCard passedTrailCard ) )
 		   
+	(print "Weeeeeeeeeeeeeeee")
 	(print hand)
 	(print trailCard)
 	(print (first hand)  )
 		   
 	(cond ((eq hand () ) trailCard )
-		  (( < (first (rest (first hand) ) ) (first (rest trailCard ) ) )
+		  (( < (rest (first hand) ) (first (rest trailCard ) ) )
 		  ( ComputerMakeTrail (rest hand) table (first (rest (first hand) ) ) ) )
 		  ( t (ComputerMakeMove (rest hand) table trailCard ) ) ) ) )
 		   
 		   
 	
-	
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; Function Name: ComputerGetMoveChoice
+; Purpose: To find the best move choice for the computer to use
+; Parameters: None
+; Return Value: The move that the player should make
+; Local Variables: None
+; Algorithm: 
+;	1) Just return "t" for trailing right now, I don't believe I will have time to implement the other moves
+; Assistance Received: none 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun ComputerGetMoveChoice () 
 
 't )	
@@ -341,7 +403,7 @@
 		  (( eq playerMove 'c )
 	      ( print "The computer is capturing" ) )
 		  (( eq playerMove 't )
-			(cond (t (list playerMove ( ComputerMakeTrail computerHand table (list 20) ) ) ) ) ) ) ) )
+			(cond (t (list playerMove ( ComputerMakeTrail computerHand table (string (first computerHand) ) ) ) ) ) ) ) ) )
 		   
 			
 
