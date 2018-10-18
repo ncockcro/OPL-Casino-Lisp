@@ -359,7 +359,7 @@ C8 D8 H8 S8 C9 D9 H9 S9 CX DX HX SX CJ DJ HJ SJ CQ DQ HQ SQ CK DK HK SK) )
 ;	passedTable, holds the current table on the board
 ; Return Value: A list with the player's choice and the card(s) they are using for the move
 ; Local Variables: 
-;            playerMove, holds the move the player wants to make
+;   playerMove, holds the move the player wants to make
 ;	hand, holds the hand of the player
 ;	table, holds the current table
 ; Algorithm: 
@@ -529,6 +529,9 @@ C8 D8 H8 S8 C9 D9 H9 S9 CX DX HX SX CJ DJ HJ SJ CQ DQ HQ SQ CK DK HK SK) )
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;	
 (defun RemoveCaptureCardsFromTable ( passedCaptureCard passedTable passedNewTable)
 
+(print passedTable)
+(print passedNewTable)
+
 
 	(Let* ((captureCard passedCaptureCard)
 		   (stringCaptureCard (string passedCaptureCard))
@@ -537,8 +540,9 @@ C8 D8 H8 S8 C9 D9 H9 S9 CX DX HX SX CJ DJ HJ SJ CQ DQ HQ SQ CK DK HK SK) )
 		   (newTable passedNewTable))
 		   
 	(cond ((eq table () ) newTable )
+		  ((eq (list-length table) 1) (RemoveCaptureCardsFromTable captureCard (rest table) (append table newTable)))
 		  ((eq (char stringCaptureCard 1) (char stringFirstTableCard 1) ) (RemoveCaptureCardsFromTable captureCard (rest table) newTable ) )
-		  (t (RemoveCaptureCardsFromTable captureCard (rest table) (first table) ) )) ) )
+		  (t (RemoveCaptureCardsFromTable captureCard (rest table) (append (list (first table)) newTable) ) )) ) )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; Function Name: AddCaptureCardsToPile
@@ -727,8 +731,8 @@ C8 D8 H8 S8 C9 D9 H9 S9 CX DX HX SX CJ DJ HJ SJ CQ DQ HQ SQ CK DK HK SK) )
 												 
 	; Now, if the move the player chose is a trail, we need to add the card to the table...
 	( cond (( eq roundCycle 8 )
-			(cond (( eq (first playerMove&Card) 'c ) ( PlayRound deck humanHand computerHand table humanPile computerPile nextPlayer
-												 (+ roundCycle 1) playerMove&Card firstGame ) ) ) ) )
+			(cond (( eq (first playerMove&Card) 'c ) ( PlayRound deck (RemoveTrailFromHand humanHand (first (rest playerMove&Card) ) () ) computerHand table
+													humanPile computerPile nextPlayer (+ roundCycle 1) playerMove&Card firstGame ) ) ) ) )
 		
 
 	; If the next player is "Computer", then we know the human just made the last move and must change their hand depending on what they
@@ -746,8 +750,8 @@ C8 D8 H8 S8 C9 D9 H9 S9 CX DX HX SX CJ DJ HJ SJ CQ DQ HQ SQ CK DK HK SK) )
 	( cond (( eq roundCycle 9 )
 			(cond (( equal nextPlayer "Computer" )
 					(cond (( eq (first playerMove&Card) 'C )
-												( PlayRound deck (RemoveTrailFromHand humanHand (first (rest playerMove&Card) ) () )
-												computerHand table (AddCaptureCardsToPile (first (rest playerMove&Card ) ) table humanPile) computerPile nextPlayer (+ roundCycle 1)
+												( PlayRound deck humanHand
+												computerHand (RemoveCaptureCardsFromTable (first (rest playerMove&Card) ) table () )  (AddCaptureCardsToPile (first (rest playerMove&Card ) ) table humanPile) computerPile nextPlayer (+ roundCycle 1)
 												playerMove&Card firstGame ) ) ) ) ) ) )
 												
 	; If the next player is "Human", then we know the computer just made the last move and must change their hand depending on what they
@@ -980,6 +984,11 @@ C8 D8 H8 S8 C9 D9 H9 S9 CX DX HX SX CJ DJ HJ SJ CQ DQ HQ SQ CK DK HK SK) )
 		  (( > humanNumCards computerNumCards ) "Computer" )
 		  (( eq humanNumCards computerNumCards ) "Neither" ) ) ) )
 		  
+		  
+		  
+		  
+
+		  
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -1078,9 +1087,40 @@ C8 D8 H8 S8 C9 D9 H9 S9 CX DX HX SX CJ DJ HJ SJ CQ DQ HQ SQ CK DK HK SK) )
 		  (PlayTournament humanScore computerScore (+ roundCounter 1) (PlayRound (ActualDeck (loadDeck)) () () () () () (FirstPlayer) 1 () "True" ) "True"  1 "Neither" "Neither" ) ) )
 		  
 		
-		  
 	
-(PlayTournament 0 0 1 (PlayRound (ActualDeck (loadDeck)) () () () () () (FirstPlayer) 1 () "True" ) "True" 1 "Neither" "Neither")
+
+;(print (open "C:\\Users\\ncockcro\\AppData\\Roaming\\Microsoft\\Windows\\test.txt"))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; Function Name: OpeningMenu
+; Purpose: To serve as the opening menu when a player first boots up the game
+; Parameters: None
+; Return Value: Depeninding on the option the user picks, it will call the appropriate function
+; Local Variables:  None
+; Algorithm: 
+;	1) If the option is 1, load a game of Casino
+;  	2) If the option is 2, play a new game of Casino
+;	3) If the option is 3, exit the program
+; 	4) If the option was neither of those, call the function again and ask the user
+; Assistance Received: none 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun OpeningMenu () 
+
+(print "Enter '1' to load a game")
+(print "Enter '2' to play a new game")
+(print "Enter '3' to exit")
+
+	(Let* ((option (read)))
+
+	(cond ((eq option 1) option)
+		  ((eq option 2) (PlayTournament 0 0 1 (PlayRound (ActualDeck (loadDeck)) "True" () () () () (FirstPlayer) 1 () "True" ) "True" 1 "Neither" "Neither"))
+		  ((eq option 3) (return))
+		  (t (print "Incorrect menu option") (OpeningMenu)))))
+		  
+		  
+(print (OpeningMenu))
+
+	
 
 	
 		  
