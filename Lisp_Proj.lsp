@@ -109,6 +109,28 @@
 C8 D8 H8 S8 C9 D9 H9 S9 CX DX HX SX CJ DJ HJ SJ CQ DQ HQ SQ CK DK HK SK) )
 
 
+(defun Randomize (randList randNum)
+
+		(cond ((eq (list-length randList) 52 ) randList)
+			  ((equal (CheckIfContains randList randNum) "True") (Randomize randList (random 52)))
+			  ((< (list-length randList) 52 ) (Randomize (append (list randNum) randList) (random 52) ))))
+			  
+(defun CheckIfContains (randList randNum)
+
+
+	(cond ((eq randList () ) "False")
+		  ((eq (first randList) randNum ) "True" )
+		  (t (CheckIfContains (rest randList) randNum))))
+		  
+(defun ShuffleCards (randList cardList shuffledList)
+
+	(cond ((eq randList () ) ShuffledList )
+		  (t (ShuffleCards (rest randList) cardList (append (list (nth (first randList) cardList)) shuffledList)))))
+		  
+		  
+(print (ShuffleCards (Randomize () (random 52)) (LoadDeck) () ) )
+
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; Function Name: ActualDeck
 ; Purpose: Takes in the deck of 52 cards, not finished but might be responsible for randomly shuffling the deck
@@ -122,8 +144,7 @@ C8 D8 H8 S8 C9 D9 H9 S9 CX DX HX SX CJ DJ HJ SJ CQ DQ HQ SQ CK DK HK SK) )
 ; Assistance Received: none 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun ActualDeck ( passedDeck )
-	(Let* (( deck passedDeck ))
-			deck ) )
+		(ShuffleCards (Randomize () (random 52)) passedDeck () ) )
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -450,12 +471,15 @@ C8 D8 H8 S8 C9 D9 H9 S9 CX DX HX SX CJ DJ HJ SJ CQ DQ HQ SQ CK DK HK SK) )
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;	
 (defun ComputerMakeTrail ( passedHand passedTable passedTrailCard )
 
+(print passedHand)
+(print "Were in computer make trail")
+
 
 	(Let* (( hand passedHand )
 		   ( table passedTable )
 		   ( trailCard passedTrailCard ) )
 		   
-	(cond ((eq hand () ) (intern trailCard ) )
+	(cond ((eq hand () ) trailCard )
 		  (( < (CardValue (first hand) )  (CardValue trailCard) ) ( ComputerMakeTrail (rest hand) table (first hand) ) )
 		  ( t (ComputerMakeTrail (rest hand) table trailCard ) ) ) ) )
 		   
@@ -1116,6 +1140,9 @@ C8 D8 H8 S8 C9 D9 H9 S9 CX DX HX SX CJ DJ HJ SJ CQ DQ HQ SQ CK DK HK SK) )
 		  ((eq option 2) (PlayTournament 0 0 1 (PlayRound (ActualDeck (loadDeck)) "True" () () () () (FirstPlayer) 1 () "True" ) "True" 1 "Neither" "Neither"))
 		  ((eq option 3) (return))
 		  (t (print "Incorrect menu option") (OpeningMenu)))))
+	
+
+
 		  
 		  
 (print (OpeningMenu))
