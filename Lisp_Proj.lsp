@@ -106,7 +106,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun LoadDeck ()
 '( CA DA HA SA C2 D2 H2 S2 C3 D3 H3 S3 C4 D4 H4 S4 C5 D5 H5 S5 C6 D6 H6 S6 C7 D7 H7 S8 
-C8 D8 H8 S8 C9 D9 H9 S9 CX DX HX SX CJ DJ HJ SJ CQ DQ HQ SQ CK DK HK SK) )
+C8 D8 H8 S9 C9 D9 H9 S9 CX DX HX SX CJ DJ HJ SJ CQ DQ HQ SQ CK DK HK SK) )
 
 
 (defun Randomize (randList randNum)
@@ -126,9 +126,7 @@ C8 D8 H8 S8 C9 D9 H9 S9 CX DX HX SX CJ DJ HJ SJ CQ DQ HQ SQ CK DK HK SK) )
 
 	(cond ((eq randList () ) ShuffledList )
 		  (t (ShuffleCards (rest randList) cardList (append (list (nth (first randList) cardList)) shuffledList)))))
-		  
-		  
-(print (ShuffleCards (Randomize () (random 52)) (LoadDeck) () ) )
+		 
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -471,15 +469,16 @@ C8 D8 H8 S8 C9 D9 H9 S9 CX DX HX SX CJ DJ HJ SJ CQ DQ HQ SQ CK DK HK SK) )
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;	
 (defun ComputerMakeTrail ( passedHand passedTable passedTrailCard )
 
-(print passedHand)
-(print "Were in computer make trail")
-
 
 	(Let* (( hand passedHand )
 		   ( table passedTable )
 		   ( trailCard passedTrailCard ) )
 		   
-	(cond ((eq hand () ) trailCard )
+	; If the hand is empty, somtimes the particular card can be a string so if it is, then I am converting it to a regular
+	; atom so that it can be properly worked with
+	(cond ((eq hand () ) (cond ((eq (stringp trailCard) 't) (intern trailCard )) 
+								(t trailCard) )
+	)
 		  (( < (CardValue (first hand) )  (CardValue trailCard) ) ( ComputerMakeTrail (rest hand) table (first hand) ) )
 		  ( t (ComputerMakeTrail (rest hand) table trailCard ) ) ) ) )
 		   
@@ -694,7 +693,9 @@ C8 D8 H8 S8 C9 D9 H9 S9 CX DX HX SX CJ DJ HJ SJ CQ DQ HQ SQ CK DK HK SK) )
 			( roundCycle passedRoundCycle ) 
 			( playerMove&Card passedPlayerMove&Card )
 			( firstGame passedFirstGame ) )
-		
+			
+			
+		(print roundCycle)
 			
 			
 			
@@ -736,16 +737,22 @@ C8 D8 H8 S8 C9 D9 H9 S9 CX DX HX SX CJ DJ HJ SJ CQ DQ HQ SQ CK DK HK SK) )
 			
 			
 	( cond (( eq roundCycle 7 ) ( print "Table:" ) ( print table ) (print "Hand:") (print humanHand) ( print "Human pile:" ) ( print humanPile )
-								(print "Computer Hand:" ) (print computerHand ) ( print "Computer piile:" ) ( print computerPile ) )  )
+								(print "Computer Hand:" ) (print computerHand ) ( print "Computer piile:" ) ( print computerPile ) (print "Deck: ") (print deck))  )
 	
 	; If the next player is the human, then they will go...
-	( cond (( eq roundCycle 7 ) 
+	( cond (( eq roundCycle 7 )
 			(cond (( equal nextPlayer "Human" ) (print "It's your turn") ( PlayRound deck humanHand computerHand table humanPile computerPile "Computer" 
+												(+ roundCycle 1) (print (HumanMakeMove humanHand table nil (HumanGetMoveChoice) )) firstGame ) ) )
+												
+			(cond (( eq nextPlayer 'human ) (print "It's your turn") ( PlayRound deck humanHand computerHand table humanPile computerPile "Computer" 
 												(+ roundCycle 1) (print (HumanMakeMove humanHand table nil (HumanGetMoveChoice) )) firstGame ) ) ) ) )
 	
 	;Otherwise, then the computer will go...	
-	( cond (( eq roundCycle 7 ) 
+	( cond (( eq roundCycle 7 )
 		(cond (( equal nextPlayer "Computer" ) (print "It's the computer's turn") ( PlayRound deck humanHand computerHand table humanPile computerPile 
+												"Human" (+ roundCycle 1) (ComputerMakeMove computerHand table ) firstGame ) ) )
+												
+		(cond (( eq nextPlayer 'Computer ) (print "It's the computer's turn") ( PlayRound deck humanHand computerHand table humanPile computerPile 
 												"Human" (+ roundCycle 1) (ComputerMakeMove computerHand table ) firstGame ) ) ) ) )
 		
 	; Now, if the move the player chose is a trail, we need to add the card to the table...
@@ -791,14 +798,15 @@ C8 D8 H8 S8 C9 D9 H9 S9 CX DX HX SX CJ DJ HJ SJ CQ DQ HQ SQ CK DK HK SK) )
 	; After a player has made a move and the player's hand and table is properly adjusted, we need to check if the player's hands
 	; are empty and if we need to deal move cards
 	( cond (( eq roundCycle 10 )
-			(cond ((eq humanHand ())
-				(cond ((eq computerHand ()) 
-					(cond (( eq deck ()) (list humanPile computerPile ) )
-					( t (PlayRound deck humanHand computerHand table humanPile computerPile nextPlayer 1 playerMove&Card firstGame ) ) ) ) ) ) ) ) )
+			(cond ((eq humanHand ()) (print "Human hand empty")
+				(cond ((eq computerHand ())  (print "Computer hand empty")
+					(cond (( eq deck ()) (print "Deck is empty") (PlayRound deck humanHand computerHand table humanPile computerPile nextPlayer (+ roundCycle 1) playerMove&Card "True") )
+					( t (print "Adding new cards") (PlayRound deck humanHand computerHand table humanPile computerPile nextPlayer 1 playerMove&Card firstGame ) ) ) ) ) ) ) ) )
 
-	( cond (( eq roundCycle 10 ) (print "And then we go back here") (PlayRound deck humanHand computerHand table humanPile computerPile nextPlayer 7 playerMove&Card firstGame) ) ) ) )
+	( cond (( eq roundCycle 10 )
+			(cond ((equal firstGame "False" ) (print "jfehvruhr") (PlayRound deck humanHand computerHand table humanPile computerPile nextPlayer 7 playerMove&Card firstGame) ) ) ) )
 	
-	;( cond (( eq roundCycle 12 ) (print "round 11")  (list humanPile computerPile ) ) ) ) )
+	( cond (( eq roundCycle 11 ) (print "round 11") (print "Human pile: ") (print humanPile) (print "ComputerPile: ") (print computerPile) (list humanPile computerPile ) ) ) ) )
 	
 	
 	
@@ -1111,9 +1119,57 @@ C8 D8 H8 S8 C9 D9 H9 S9 CX DX HX SX CJ DJ HJ SJ CQ DQ HQ SQ CK DK HK SK) )
 		  (PlayTournament humanScore computerScore (+ roundCounter 1) (PlayRound (ActualDeck (loadDeck)) () () () () () (FirstPlayer) 1 () "True" ) "True"  1 "Neither" "Neither" ) ) )
 		  
 		
-	
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; Function Name: AskForSave
+; Purpose: To ask the user for a save file to load from and return the file stream
+; Parameters: None
+; Return Value: The contents of a save file
+; Local Variables:  None
+; Algorithm: 
+;	1) Propmt the user for a file they want to open
+;  	2) Return the filestream
+; Assistance Received: none 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun AskForSave ()
 
-;(print (open "C:\\Users\\ncockcro\\AppData\\Roaming\\Microsoft\\Windows\\test.txt"))
+	(print "Enter a file to load from: ")
+
+	(Let* ((fileName (read) ) )
+	
+	(cond (t (open fileName)) )))
+	
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; Function Name: ReadSave
+; Purpose: To serve as getting the contents of the file
+; Parameters: None
+; Return Value: The list which contains all of the sub lists of the load file
+; Local Variables:  None
+; Algorithm: 
+;	1) Return the list which contains all of the content for the game
+; Assistance Received: none 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun ReadSave (passedFile)
+
+	(cond
+		  (t (read passedFile))))
+	
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; Function Name: LoadGame
+; Purpose: To load the game with the list of content from the save file
+; Parameters:
+;	save, the list containing all of the necessary fields to load the game
+; Return Value: Nothing, when this function returns, the game is over
+; Local Variables:  None
+; Algorithm: 
+;	1) Play the tournament with the information from the save file
+; Assistance Received: none 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;	
+(defun LoadGame (save)
+
+	(cond (t (PlayTournament (nth 4 save) (nth 1 save) (nth 0 save) (PlayRound (nth 10 save) (nth 5 save) (nth 2 save) (nth 7 save) (nth 6 save) (nth 3 save) (nth 11 save) 7 () "False") "True" 1 "Neither" "Neither") ) ) )
+
+
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; Function Name: OpeningMenu
@@ -1136,7 +1192,7 @@ C8 D8 H8 S8 C9 D9 H9 S9 CX DX HX SX CJ DJ HJ SJ CQ DQ HQ SQ CK DK HK SK) )
 
 	(Let* ((option (read)))
 
-	(cond ((eq option 1) option)
+	(cond ((eq option 1) (LoadGame (ReadSave (AskForSave) )) )
 		  ((eq option 2) (PlayTournament 0 0 1 (PlayRound (ActualDeck (loadDeck)) "True" () () () () (FirstPlayer) 1 () "True" ) "True" 1 "Neither" "Neither"))
 		  ((eq option 3) (return))
 		  (t (print "Incorrect menu option") (OpeningMenu)))))
