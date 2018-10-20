@@ -652,7 +652,137 @@ C8 D8 H8 S9 C9 D9 H9 S9 CX DX HX SX CJ DJ HJ SJ CQ DQ HQ SQ CK DK HK SK) )
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;	
 (defun AddTrailToTable (passedTable passedTrailCard)
 
-	( append passedTable passedTrailCard ) )	   
+	( append passedTable passedTrailCard ) )
+	
+	
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; Function Name: SaveGame
+; Purpose: To write the contents of the game to a text file
+; Parameters:
+;	passedRound, the current round
+;	passedComputerScore, the computer's score
+;	passedComputerHand, the computer's hand
+;	passedComputerPile, the computer's pile
+;	passedHumanScore, the human's pile
+;	passedHumanHand, the human's hand
+;	passedHumanPile, the human's pile
+;	passedTable, the table of the board
+;	passedLastCapture, the player that captured last
+;	passedDeck, the current deck
+;	passedNextPlayer, the next player who is supposed to play
+; Return Value: None, it ends the game
+; Local Variables: None
+; Algorithm: 
+;	1) Open the output file
+;	2) Write all of the game's content to the text file
+;	3) Close the file and exit the program
+; Assistance Received: none 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun SaveGame (passedRound passedComputerScore passedComputerHand passedComputerPile passedHumanScore passedHumanHand passedHumanPile passedTable
+					passedLastCapture passedDeck passedNextPlayer)
+
+	(Let* ((outputFile (open "Word.txt" 
+							:direction :output )))
+							
+	(write-line "(" outputFile)
+	(write-line "      ; Round:" outputFile)
+	(format outputFile "      ")
+	(write-line (write-to-string passedRound) outputFile)
+	(write-line "   " outputFile)
+	
+	(write-line "      ; Computer Score:" outputFile)
+	(format outputFile "      ")
+	(write-line (write-to-string passedComputerScore) outputFile)
+	(write-line "   " outputFile)
+	
+	(write-line "      ; Computer Hand:" outputFile)
+	(format outputFile "      ")
+	(write-line (write-to-string passedComputerHand) outputFile)
+	(write-line "   " outputFile)
+	
+	(write-line "      ; Computer Pile:" outputFile)
+	(format outputFile "      ")
+	(write-line (write-to-string passedComputerPile) outputFile)
+	(write-line "   " outputFile)
+	
+	(write-line "      ; Human Score:" outputFile)
+	(format outputFile "      ")
+	(write-line (write-to-string passedHumanScore) outputFile)
+	(write-line "   " outputFile)
+	
+	(write-line "      ; Human Hand:" outputFile)
+	(format outputFile "      ")
+	(write-line (write-to-string passedHumanHand) outputFile)
+	(write-line "   " outputFile)
+	
+	(write-line "      ; Human Pile:" outputFile)
+	(format outputFile "      ")
+	(write-line (write-to-string passedHumanPile) outputFile)
+	(write-line "   " outputFile)
+	
+	(write-line "      ; Table:" outputFile)
+	(format outputFile "      ")
+	(write-line (write-to-string passedTable) outputFile)
+	(write-line "   " outputFile)
+	
+	(write-line "      ; Last Capturer:" outputFile)
+	(format outputFile "      ")
+	(write-line (write-to-string passedLastCapture) outputFile)
+	(write-line "   " outputFile)
+	
+	(write-line "      ; Deck:" outputFile)
+	(format outputFile "      ")
+	(write-line (write-to-string passedDeck) outputFile)
+	(write-line "   " outputFile)
+	
+	(write-line "      ; Next Player:" outputFile)
+	(format outputFile "      ")
+	(write-line (write-to-string passedNextPlayer) outputFile)
+	(write-line "   " outputFile)
+	
+	(close outputFile)
+	(return nil)) )
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; Function Name: MoveMainMenu
+; Purpose: To be displayed each time before each user makes a move
+; Parameters:
+;	passedTable, the current table in a round
+;	passedTrailCard, the trail card to be added to the tablepassedRound, the current round
+;	passedComputerScore, the computer's score
+;	passedComputerHand, the computer's hand
+;	passedComputerPile, the computer's pile
+;	passedHumanScore, the human's pile
+;	passedHumanHand, the human's hand
+;	passedHumanPile, the human's pile
+;	passedTable, the table of the board
+;	passedLastCapture, the player that captured last
+;	passedDeck, the current deck
+;	passedNextPlayer, the next player who is supposed to play
+; Return Value: The new table list with the trail card added
+; Local Variables: None
+; Algorithm: 
+;	1) If the user types 1, save the game in its current statements
+;	2) If they press 2, dont do anything, the move will be handled by the next function after MoveMainMenu
+;	3) If they type 3, end the program
+; Assistance Received: none 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun MoveMainMenu (passedRound passedComputerScore passedComputerHand passedComputerPile passedHumanScore passedHumanHand passedHumanPile passedTable
+					passedLastCapture passedDeck passedNextPlayer)
+
+	(print "Enter '1' to save the game")
+	(print "Enter '2' to make a move")
+	(print "Enter '3' to exit")
+
+	(Let* ((move (read)))
+	
+	(cond ((eq move '1) (SaveGame passedRound passedComputerScore passedComputerHand passedComputerPile passedHumanScore passedHumanHand passedHumanPile passedTable
+					passedLastCapture passedDeck passedNextPlayer))
+		  ((eq move '2) )
+		  ((eq move '3) (return nil))
+		  (t (MoveMainMenu)))))
+		  
+(MoveMainMenu '1 '17 '( H5 H6 D4 D7 ) '( SX SQ SK D6 H8 ) 14 '( SA S4 CA C9 ) '( DJ DA C3 C5 ) '( C8 CJ HA ) 'Human '( S7 D3 D5 H2 H3 S5 D8 C2 H9 CX CQ CK HJ S2 S6 D9 DX DQ DK D2 HX HQ HK C4 C7 S8 SJ H4 H7 ) 'Human )
 	
 
 
@@ -812,7 +942,6 @@ C8 D8 H8 S9 C9 D9 H9 S9 CX DX HX SX CJ DJ HJ SJ CQ DQ HQ SQ CK DK HK SK) )
 	
 	
 				 	   
-	;( PlayRound deck humanHand computerHand table nextPlayer (+ roundCycle 1) () playerMove playerCard ) ) )
 	
 
 
@@ -933,6 +1062,36 @@ C8 D8 H8 S9 C9 D9 H9 S9 CX DX HX SX CJ DJ HJ SJ CQ DQ HQ SQ CK DK HK SK) )
 		  (( eq scoreCounter 2 ) (CalculateScore playerPile ( TwoSpades playerPile 0 ) ( + scoreCounter 1 ) ) )
 		  (( eq scoreCounter 3 ) (CalculateScore playerPile ( CountAces playerPile ) ( + scoreCounter 1 ) ) )
 		  (( eq scoreCounter 4 ) playerScore ) ) ) )
+		  
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; Function Name: CountSpades
+; Purpose: To count the number of spades in a player's pile
+; Parameters:
+;	passedPlayerPile, a player's pile of cards
+;	passedSpadeCount, a counter for the number of spades
+; Return Value: Returns the number of spades in a player's pile
+; Local Variables: 
+;	playerPile, holds the player's pile
+;	spadeCount, the count of the number of spades
+; Algorithm: 
+;	1) If the players pile is empty, return the count of spades
+;	2) If the current card is a spade, increment the count for spades
+;	3) Else, cycle through the rest of the cards but dont increase the count of spades
+; Assistance Received: none 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defun CountSpades ( passedPlayerPile passedSpadeCount )
+
+	(Let* (( playerPile passedPlayerPile )
+		  ( spadeCount passedSpadeCount )
+		  ( stringFirstSpadeCard (string (first playerPile) ) ))
+	
+	; Once we've cycled through all of the cards, return the count of spades
+	(cond ((eq playerPile ()) spadeCount )
+		  ; If the card is a spade, increment the count...
+		  ((eq (char stringFirstSpadeCard 0) '#\S) (CountSpades (rest playerPile) (+ spadeCount 1) ) )
+		  ; Else, keep cycling through the rest of the cards
+		  (t (CountCards ( rest playerPile ) cardCount ) ) ) ) )
+		  
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; Function Name: CheckWhoHasMoreSpades
@@ -949,7 +1108,11 @@ C8 D8 H8 S9 C9 D9 H9 S9 CX DX HX SX CJ DJ HJ SJ CQ DQ HQ SQ CK DK HK SK) )
 ;	computerNumSpades, holds the number of spades the computer has
 ;	counter, just a counter for keeping track of what to do next
 ; Algorithm: 
-;	1) WORK IN PROGRESS
+;	1) Get the number of spades the human has
+;	2) Get the number of spades the computer has
+;	3) If the human has more spades than the computer, return "Human"
+;	4) If the computer hase more spades than the human, return "Computer"
+;	5) If neither of them have more spades, return "Neither"
 ; Assistance Received: none 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun CheckWhoHasMoreSpades ( passedPlayerPiles passedHumanNumSpades passedComputerNumSpades passedCounter)
@@ -957,7 +1120,23 @@ C8 D8 H8 S9 C9 D9 H9 S9 CX DX HX SX CJ DJ HJ SJ CQ DQ HQ SQ CK DK HK SK) )
 	(Let* (( playerPiles passedPlayerPiles )
 		  ( humanNumSpades passedHumanNumSpades )
 		  ( computerNumSpades passedComputerNumSpades )
-		  ( counter passedCounter ) ) ) )
+		  ( counter passedCounter ) )
+
+	; First get the number of spades for the human player...
+	(cond ((eq counter 1) (CheckWhoHasMoreCards playerPiles ( CountCSpades ( first playerPiles ) 0 ) computerNumCards ( + counter 1 ) ) )
+	
+		  ; Then get the number of spades the computer has...
+		  (( eq counter 2 ) ( CheckWhoHasMoreCards playerPiles humanNumCards ( CountSpades ( rest playerPiles ) 0 ) ( + counter 1 ) ) )
+		  
+		  ;	If the human has more cards than the computer, return "Human"
+		  (( > humanNumSpades computerNumCards ) "Human" )
+		  
+		  ;	If the computer has more cards then the human, return "Computer"
+		  (( < humanNumSpades computerNumCards ) "Computer" )
+		  
+		  ;	If neither of them have more spades, return "Neither"
+		  (( eq humanNumSpades computerNumSpades ) "Neither" ) )
+				) )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; Function Name: CountCards
@@ -1009,11 +1188,20 @@ C8 D8 H8 S9 C9 D9 H9 S9 CX DX HX SX CJ DJ HJ SJ CQ DQ HQ SQ CK DK HK SK) )
 		  ( humanNumCards passedHumanNumCards )
 		  ( computerNumCards passedComputerNumCards )
 		  ( counter passedCounter ))
-		  
+	
+	; First, we need to get the count of the human player's pile...
 	(cond ((eq counter 1) (CheckWhoHasMoreCards playerPiles ( CountCards ( first playerPiles ) 0 ) computerNumCards ( + counter 1 ) ) )
+	
+		  ; Then we need to get the count of the computer's pile...
 		  (( eq counter 2 ) ( CheckWhoHasMoreCards playerPiles humanNumCards ( CountCards ( rest playerPiles ) 0 ) ( + counter 1 ) ) )
-		  (( < humanNumCards computerNumCards ) "Human" )
-		  (( > humanNumCards computerNumCards ) "Computer" )
+		  
+		  ; If the human has more cards than the computer, return "Human"
+		  (( > humanNumCards computerNumCards ) "Human" )
+		  
+		  ; If the computer has more cards than the human, return "Computer"
+		  (( < humanNumCards computerNumCards ) "Computer" )
+		  
+		  ; If neither of them have more cards, return "Neither"
 		  (( eq humanNumCards computerNumCards ) "Neither" ) ) ) )
 		  
 		  
@@ -1062,43 +1250,54 @@ C8 D8 H8 S9 C9 D9 H9 S9 CX DX HX SX CJ DJ HJ SJ CQ DQ HQ SQ CK DK HK SK) )
 	   
 	   
 	
-	; If the human and computer scores are the same and the human's score is greater than 21, then we have a tie!
+	; Checking to see which of the player's have more cards
 	(cond (( eq tallyScore "True")
 			(cond (( eq tallyScoreCounter 1) (PlayTournament humanScore computerScore roundCounter pile tallyScore ( + tallyScoreCounter 1) 
 				(CheckWhoHasMoreCards pile 0 0 1 ) "Neither" ) ) ) ) ) 
 				
 				
 			
-		  ; After getting the player with the most cards, we now need to check if that player is the human and add 3 points to their score
+	; After getting the player with the most cards, we now need to check if that player is the human and add 3 points to their score
 	(cond (( eq tallyScore "True" )
-			(cond (( eq moreCardPlayer "Human" ) (PlayTournament ( + humanScore 3 ) computerScore roundCounter pile tallyScore tallyScoreCounter "Neither" "Neither") ) ) ) )
+			(cond (( eq moreCardPlayer "Human" ) (print "The human had more cards, plus three points.")
+			(PlayTournament ( + humanScore 3 ) computerScore roundCounter pile tallyScore tallyScoreCounter "Neither" "Neither") ) ) ) )
 			
-		  ; After getting the player with the most cards, now we must check if the computer had the most cards and add 3 points of necessary
+	; After getting the player with the most cards, now we must check if the computer had the most cards and add 3 points of necessary
 	(cond (( eq tallyScore "True" )
-			(cond (( eq moreCardPlayer "Computer" ) (PlayTournament humanScore ( + computerScore 3 ) roundCounter pile tallyScore tallyScoreCounter "Neither" "Neither" ) ) ) ) )
+			(cond (( eq moreCardPlayer "Computer" ) (print "The computer had more cards, plus three points.")
+			(PlayTournament humanScore ( + computerScore 3 ) roundCounter pile tallyScore tallyScoreCounter "Neither" "Neither" ) ) ) ) )
 				
-		  ; Now we need to get the player who has the most spades
+	; Now we need to get the player who has the most spades
 	(cond (( eq tallyScore "True" )
 			(cond (( eq tallyScoreCounter 2 ) ( PlayTournament humanScore computerScore roundCounter pile tallyScore 
 				( + tallyScoreCounter 1 ) "Neither" (CheckWhoHasMoreSpades pile 0 0 1 ) ) ) ) ) )
 				
-		  ; If the human had more spades, give them a point...
+	; If the human had more spades, give them a point...
 	(cond (( eq tallyScore "True" )
-			(cond (( eq moreSpadePlayer "Human" ) (PlayTournament ( + humanScore 1 ) computerScore roundCounter pile tallyScore tallyScoreCounter "Neither" "Neither" ) ) ) ) )
+			(cond (( eq moreSpadePlayer "Human" ) (print "The human had more spades, plus a point.")
+			(PlayTournament ( + humanScore 1 ) computerScore roundCounter pile tallyScore tallyScoreCounter "Neither" "Neither" ) ) ) ) )
 				
-		  ; If the computer had more spades, give them a point
+	; If the computer had more spades, give them a point
 	(cond (( eq tallyScore "True" )
-			(cond (( eq moreSpadePlayer "Computer" ) (PlayTournament humanScore ( + computerScore 1 ) roundCounter pile tallyScore tallyScoreCounter
+			(cond (( eq moreSpadePlayer "Computer" ) (print "The computer had more spades, plus a point.")
+			(PlayTournament humanScore ( + computerScore 1 ) roundCounter pile tallyScore tallyScoreCounter
 				"Neither" "Neither") ) ) ) )
 			
-		  ; Now we need to calculate the rest of the ways to earn points for the human...
+	; Now we need to calculate the rest of the ways to earn points for the human...
 	(cond (( eq tallyScore "True" )
 			(cond (( eq tallyScoreCounter 3 ) ( PlayTournament (+ humanScore (CalculateScore (first pile) 0 1)) computerScore roundCounter pile tallyScore
 				(+ tallyScoreCounter 1) "Neither" "Neither") ) ) ) )
 				
-		  ; Now we need to calculate the rest of the ways to earn points for the computer...
+	; Now we need to calculate the rest of the ways to earn points for the computer...
 	(cond (( eq tallyScore "True" )
 			(cond (( eq tallyScoreCounter 4 ) (PlayTournament humanScore (+ computerScore (CalculateScore (rest pile) 0 1)) roundCounter pile "False"
+				(+ tallyScoreCounter 1) "Neither" "Neither") ) ) ) )
+	
+
+	; Here we are outputting the player's scores after calculating everything for that round
+	(cond (( eq tallyScore "True" )
+			(cond ((eq tallyScore 5 ) (print "Human Score: ") (print humanScore) (print "Computer Score: ") (print computerScore)
+			(PlayTournament humanScore (+ computerScore (CalculateScore (rest pile) 0 1)) roundCounter pile "False"
 				(+ tallyScoreCounter 1) "Neither" "Neither") ) ) ) )
 				
 	
