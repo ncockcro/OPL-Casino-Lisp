@@ -11,22 +11,6 @@
 
 
 (print "Welcome to Casino!")
-
-; How to create a let function
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;
-;  (defun name1 ()
-;  (Let* ((x 5) (y 4)) 
-;
-;  (cond ((eq 5 x) (print '(x is 5)))
-;	  (t (print '(nothing to see here))))))
-;
-; (name1)
-;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;	
-
-; How to debug a particular function
-;(trace coinToss)
 	
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; Function Name: CoinToss
@@ -51,7 +35,7 @@
 		  ( ( eq headsOrTails '2) 
 				HeadsOrTails )
 		  (t 
-		  ( print headsOrTails )) ) ) )
+		  (print "Invalid choice. Pick either '1' for heads or '2' for tails.") (CoinToss) ) ) ) )
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -396,6 +380,11 @@ C8 D8 H8 S9 C9 D9 H9 S9 CX DX HX SX CJ DJ HJ SJ CQ DQ HQ SQ CK DK HK SK) )
 	  ( table passedTable )
 	  ( moveCard passedMoveCard ))
 	  
+	  (print "---------")
+	  (print playerMove)
+	  (print moveCard)
+	  (print "---------")
+	  
 	  
 	(cond (( eq playerMove nil )(HumanMakeMove hand table moveCard (HumanGetMoveChoice) ) ) )
 	  
@@ -405,11 +394,11 @@ C8 D8 H8 S9 C9 D9 H9 S9 CX DX HX SX CJ DJ HJ SJ CQ DQ HQ SQ CK DK HK SK) )
 		  (( eq playerMove 'c) 
 			(cond ((eq moveCard nil ) (HumanMakeMove hand table (MakeCapture hand table) playerMove ) )
 				  (( equal (CheckCapture moveCard hand table) "True" ) ( list playerMove moveCard ) )
-				  (( equal (CheckCapture moveCard hand table) "False" ) (HumanMakeMove hand table nil nil ) ) ) )
+				  (( equal (CheckCapture moveCard hand table) "False" ) (HumanMakeMove hand table nil (HumanGetMoveChoice) ) ) ) )
 		  (( eq playerMove 't ) 
 				( cond  (( eq moveCard nil ) (HumanMakeMove hand table (MakeTrail hand table) playerMove ) )
 						(( equal (CheckTrail moveCard hand) "True" ) ( list playerMove  moveCard ) )
-						(( equal (CheckTrail moveCard hand) "False" ) (HumanMakeMove hand table () nil ) )
+						(( equal (CheckTrail moveCard hand) "False" ) (HumanMakeMove hand table nil (HumanGetMoveChoice) ) )
 						( t (HumanMakeMove hand table (MakeTrail hand table) playerMove ) ) ) )) ) )
 						
 						
@@ -740,6 +729,8 @@ C8 D8 H8 S9 C9 D9 H9 S9 CX DX HX SX CJ DJ HJ SJ CQ DQ HQ SQ CK DK HK SK) )
 	(write-line (write-to-string passedNextPlayer) outputFile)
 	(write-line "   " outputFile)
 	
+	(write-line ")" outputFile)
+	
 	(close outputFile)
 	(return nil)) )
 
@@ -782,7 +773,7 @@ C8 D8 H8 S9 C9 D9 H9 S9 CX DX HX SX CJ DJ HJ SJ CQ DQ HQ SQ CK DK HK SK) )
 		  ((eq move '3) (return nil))
 		  (t (MoveMainMenu)))))
 		  
-(MoveMainMenu '1 '17 '( H5 H6 D4 D7 ) '( SX SQ SK D6 H8 ) 14 '( SA S4 CA C9 ) '( DJ DA C3 C5 ) '( C8 CJ HA ) 'Human '( S7 D3 D5 H2 H3 S5 D8 C2 H9 CX CQ CK HJ S2 S6 D9 DX DQ DK D2 HX HQ HK C4 C7 S8 SJ H4 H7 ) 'Human )
+;(MoveMainMenu '1 '17 '( H5 H6 D4 D7 ) '( SX SQ SK D6 H8 ) 14 '( SA S4 CA C9 ) '( DJ DA C3 C5 ) '( C8 CJ HA ) 'Human '( S7 D3 D5 H2 H3 S5 D8 C2 H9 CX CQ CK HJ S2 S6 D9 DX DQ DK D2 HX HQ HK C4 C7 S8 SJ H4 H7 ) 'Human )
 	
 
 
@@ -811,7 +802,8 @@ C8 D8 H8 S9 C9 D9 H9 S9 CX DX HX SX CJ DJ HJ SJ CQ DQ HQ SQ CK DK HK SK) )
 ; 	4)
 ; Assistance Received: none 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun PlayRound ( passedDeck passedHumanHand passedComputerHand passedTable passedHumanPile passedComputerPile passedNextPlayer passedRoundCycle passedPlayerMove&Card passedFirstGame )
+(defun PlayRound ( passedDeck passedHumanHand passedComputerHand passedTable passedHumanPile passedComputerPile passedNextPlayer
+				   passedRoundCycle passedPlayerMove&Card passedFirstGame passedLastCapturePlayer passedCurrentRound passedHumanScore passedComputerScore)
 
 	( Let* (( deck passedDeck )
 			( humanHand passedHumanHand )
@@ -822,48 +814,61 @@ C8 D8 H8 S9 C9 D9 H9 S9 CX DX HX SX CJ DJ HJ SJ CQ DQ HQ SQ CK DK HK SK) )
 			( nextPlayer passedNextPlayer )
 			( roundCycle passedRoundCycle ) 
 			( playerMove&Card passedPlayerMove&Card )
-			( firstGame passedFirstGame ) )
+			( firstGame passedFirstGame )
+			( lastCapturePlayer passedLastCapturePlayer )
+			( currentRound passedCurrentRound )
+			( humanScore passedHumanScore )
+			( computerScore passedComputerScore ) )
 			
 			
 		(print roundCycle)
+		(print playerMove&Card)
 			
 			
 			
 	; If this is a brand new game, we need to deal cards to the player
 	( cond (( eq roundCycle 1)
-		   ( PlayRound deck (GetFourCards deck 4 ()) computerHand table humanPile computerPile nextPlayer (+ roundCycle 1) () firstGame )) )
+		   ( PlayRound deck (GetFourCards deck 4 ()) computerHand table humanPile computerPile nextPlayer 
+		   (+ roundCycle 1) () firstGame lastCapturePlayer currentRound humanScore computerScore )) )
 		   
 	; Then remove the first four cards from the deck
 	( cond (( eq roundCycle 2)
-		   ( PlayRound ( SubtractCardsFromDeck deck 4) humanHand computerHand table humanPile computerPile nextPlayer (+ roundCycle 1) () firstGame )))
+		   ( PlayRound ( SubtractCardsFromDeck deck 4) humanHand computerHand table humanPile computerPile nextPlayer 
+		   (+ roundCycle 1) () firstGame lastCapturePlayer currentRound humanScore computerScore )))
 		 
 	; Then deal four cards to the computer
 	( cond ((eq roundCycle 3)
-		   ( PlayRound deck humanHand (GetFourCards deck 4 ()) table humanPile computerPile nextPlayer (+ roundCycle 1) () firstGame )))
+		   ( PlayRound deck humanHand (GetFourCards deck 4 ()) table humanPile computerPile nextPlayer 
+		   (+ roundCycle 1) () firstGame lastCapturePlayer currentRound humanScore computerScore )))
 		
 	; Then remove the first four cards from the deck
 	( cond ((eq roundCycle 4)
-		   ( PlayRound ( SubtractCardsFromDeck deck 4) humanHand computerHand table humanPile computerPile nextPlayer (+ roundCycle 1) () firstGame )))
+		   ( PlayRound ( SubtractCardsFromDeck deck 4) humanHand computerHand table humanPile computerPile nextPlayer 
+		   (+ roundCycle 1) () firstGame lastCapturePlayer currentRound humanScore computerScore )))
 	
 	; Then deal four cards to the table
 	( cond ((eq roundCycle 5)
 		(cond ((equal firstGame "True")
-		   ( PlayRound deck humanHand computerHand (GetFourCards deck 4 ()) humanPile computerPile nextPlayer (+ roundCycle 1) () firstGame ))) ) )
+		   ( PlayRound deck humanHand computerHand (GetFourCards deck 4 ()) humanPile computerPile nextPlayer 
+		   (+ roundCycle 1) () firstGame lastCapturePlayer currentRound humanScore computerScore ))) ) )
 		   
 	; If it is not the first game, then we want to skip adding cards to the table and just increment the round counter
 	( cond ((eq roundCycle 5)
 		(cond ((equal firstGame "False")
-			( PlayRound deck humanHand computerHand table humanPile computerPile nextPlayer (+ roundCycle 1) () firstGame ) ) ) ) )
+			( PlayRound deck humanHand computerHand table humanPile computerPile nextPlayer 
+			(+ roundCycle 1) () firstGame lastCapturePlayer currentRound humanScore computerScore ) ) ) ) )
 		
 	; Then finally remove the first four cards from the table
 	( cond ((eq roundCycle 6)
 		(cond ((equal firstGame "True" )
-		   ( PlayRound ( SubtractCardsFromDeck deck 4) humanHand computerHand table humanPile computerPile nextPlayer (+ roundCycle 1) () "False" ))) ) )
+		   ( PlayRound ( SubtractCardsFromDeck deck 4) humanHand computerHand table humanPile computerPile nextPlayer 
+		   (+ roundCycle 1) () "False" lastCapturePlayer currentRound humanScore computerScore ))) ) )
 		   
 	; This condition exists if it is not the first time playing in a round and we dont want to deal cards to the table
 	( cond ((eq roundCycle 6)
 		(cond ((equal firstGame "False" )
-			( PlayRound deck humanHand computerHand table humanPile computerPile nextPlayer (+ roundCycle 1) () firstGame) ) ) ) )
+			( PlayRound deck humanHand computerHand table humanPile computerPile nextPlayer 
+			(+ roundCycle 1) () firstGame lastCapturePlayer currentRound humanScore computerScore ) ) ) ) )
 			
 			
 	( cond (( eq roundCycle 7 ) ( print "Table:" ) ( print table ) (print "Hand:") (print humanHand) ( print "Human pile:" ) ( print humanPile )
@@ -871,29 +876,37 @@ C8 D8 H8 S9 C9 D9 H9 S9 CX DX HX SX CJ DJ HJ SJ CQ DQ HQ SQ CK DK HK SK) )
 	
 	; If the next player is the human, then they will go...
 	( cond (( eq roundCycle 7 )
-			(cond (( equal nextPlayer "Human" ) (print "It's your turn") ( PlayRound deck humanHand computerHand table humanPile computerPile "Computer" 
-												(+ roundCycle 1) (print (HumanMakeMove humanHand table nil (HumanGetMoveChoice) )) firstGame ) ) )
+			(cond (( equal nextPlayer "Human" ) (print "It's your turn") (MoveMainMenu currentRound computerScore computerHand
+												computerPile humanScore humanHand humanPile table lastCapturePlayer deck nextPlayer) 
+												( PlayRound deck humanHand computerHand table humanPile computerPile "Computer" 
+												(+ roundCycle 1) (print (HumanMakeMove humanHand table nil (HumanGetMoveChoice) )) firstGame
+												lastCapturePlayer currentRound humanScore computerScore ) ) )
 												
 			(cond (( eq nextPlayer 'human ) (print "It's your turn") ( PlayRound deck humanHand computerHand table humanPile computerPile "Computer" 
-												(+ roundCycle 1) (print (HumanMakeMove humanHand table nil (HumanGetMoveChoice) )) firstGame ) ) ) ) )
+												(+ roundCycle 1) (print (HumanMakeMove humanHand table nil (HumanGetMoveChoice) )) firstGame
+												lastCapturePlayer currentRound humanScore computerScore ) ) ) ) )
 	
 	;Otherwise, then the computer will go...	
 	( cond (( eq roundCycle 7 )
 		(cond (( equal nextPlayer "Computer" ) (print "It's the computer's turn") ( PlayRound deck humanHand computerHand table humanPile computerPile 
-												"Human" (+ roundCycle 1) (ComputerMakeMove computerHand table ) firstGame ) ) )
+												"Human" (+ roundCycle 1) (ComputerMakeMove computerHand table ) firstGame
+												lastCapturePlayer currentRound humanScore computerScore) ) )
 												
 		(cond (( eq nextPlayer 'Computer ) (print "It's the computer's turn") ( PlayRound deck humanHand computerHand table humanPile computerPile 
-												"Human" (+ roundCycle 1) (ComputerMakeMove computerHand table ) firstGame ) ) ) ) )
+												"Human" (+ roundCycle 1) (ComputerMakeMove computerHand table ) firstGame 
+												lastCapturePlayer currentRound humanScore computerScore) ) ) ) )
 		
 	; Now, if the move the player chose is a trail, we need to add the card to the table...
 	( cond (( eq roundCycle 8 )
 			(cond (( eq (first playerMove&Card) 't ) ( PlayRound deck humanHand computerHand (AddTrailToTable table (rest playerMove&Card) ) humanPile computerPile nextPlayer
-												 (+ roundCycle 1) playerMove&Card firstGame ) ) ) ) )
+												 (+ roundCycle 1) playerMove&Card firstGame 
+												 lastCapturePlayer currentRound humanScore computerScore ) ) ) ) )
 												 
 	; Now, if the move the player chose is a trail, we need to add the card to the table...
 	( cond (( eq roundCycle 8 )
 			(cond (( eq (first playerMove&Card) 'c ) ( PlayRound deck (RemoveTrailFromHand humanHand (first (rest playerMove&Card) ) () ) computerHand table
-													humanPile computerPile nextPlayer (+ roundCycle 1) playerMove&Card firstGame ) ) ) ) )
+													humanPile computerPile nextPlayer (+ roundCycle 1) playerMove&Card firstGame 
+													lastCapturePlayer currentRound humanScore computerScore ) ) ) ) )
 		
 
 	; If the next player is "Computer", then we know the human just made the last move and must change their hand depending on what they
@@ -903,7 +916,7 @@ C8 D8 H8 S9 C9 D9 H9 S9 CX DX HX SX CJ DJ HJ SJ CQ DQ HQ SQ CK DK HK SK) )
 					(cond (( eq (first playerMove&Card) 'T )
 												( PlayRound deck (RemoveTrailFromHand humanHand (first (rest playerMove&Card) ) () )
 												computerHand table humanPile computerPile nextPlayer (+ roundCycle 1)
-												playerMove&Card firstGame ) ) ) ) ) ) )
+												playerMove&Card firstGame lastCapturePlayer currentRound humanScore computerScore ) ) ) ) ) ) )
 												
 												
 	; If the next player is "Computer", then we know the human just made the last move and must change their hand depending on what they
@@ -913,7 +926,7 @@ C8 D8 H8 S9 C9 D9 H9 S9 CX DX HX SX CJ DJ HJ SJ CQ DQ HQ SQ CK DK HK SK) )
 					(cond (( eq (first playerMove&Card) 'C )
 												( PlayRound deck humanHand
 												computerHand (RemoveCaptureCardsFromTable (first (rest playerMove&Card) ) table () )  (AddCaptureCardsToPile (first (rest playerMove&Card ) ) table humanPile) computerPile nextPlayer (+ roundCycle 1)
-												playerMove&Card firstGame ) ) ) ) ) ) )
+												playerMove&Card firstGame "Human" currentRound humanScore computerScore) ) ) ) ) ) )
 												
 	; If the next player is "Human", then we know the computer just made the last move and must change their hand depending on what they
 	; did. In this case, this is checking if the player trailed, and will remove the trail card from their hand
@@ -922,7 +935,7 @@ C8 D8 H8 S9 C9 D9 H9 S9 CX DX HX SX CJ DJ HJ SJ CQ DQ HQ SQ CK DK HK SK) )
 					(cond (( eq (first playerMove&Card) 'T ) 
 												( PlayRound deck humanHand (RemoveTrailFromHand computerHand (first (rest playerMove&Card) ) () )
 												table humanPile computerPile nextPlayer (+ roundCycle 1)
-												playerMove&Card firstGame ) ) ) ) ) ) )
+												playerMove&Card firstGame lastCapturePlayer currentRound humanScore computerScore ) ) ) ) ) ) )
 												
 												
 	; After a player has made a move and the player's hand and table is properly adjusted, we need to check if the player's hands
@@ -930,11 +943,14 @@ C8 D8 H8 S9 C9 D9 H9 S9 CX DX HX SX CJ DJ HJ SJ CQ DQ HQ SQ CK DK HK SK) )
 	( cond (( eq roundCycle 10 )
 			(cond ((eq humanHand ()) (print "Human hand empty")
 				(cond ((eq computerHand ())  (print "Computer hand empty")
-					(cond (( eq deck ()) (print "Deck is empty") (PlayRound deck humanHand computerHand table humanPile computerPile nextPlayer (+ roundCycle 1) playerMove&Card "True") )
-					( t (print "Adding new cards") (PlayRound deck humanHand computerHand table humanPile computerPile nextPlayer 1 playerMove&Card firstGame ) ) ) ) ) ) ) ) )
+					(cond (( eq deck ()) (print "Deck is empty") (PlayRound deck humanHand computerHand table humanPile computerPile 
+																	nextPlayer (+ roundCycle 1) playerMove&Card "True" lastCapturePlayer currentRound humanScore computerScore ) )
+					( t (PlayRound deck humanHand computerHand table humanPile computerPile 
+						nextPlayer 1 playerMove&Card firstGame lastCapturePlayer currentRound humanScore computerScore ) ) ) ) ) ) ) ) )
 
 	( cond (( eq roundCycle 10 )
-			(cond ((equal firstGame "False" ) (print "jfehvruhr") (PlayRound deck humanHand computerHand table humanPile computerPile nextPlayer 7 playerMove&Card firstGame) ) ) ) )
+			(cond ((equal firstGame "False" ) (print "jfehvruhr") (PlayRound deck humanHand computerHand table humanPile computerPile 
+																	nextPlayer 7 playerMove&Card firstGame lastCapturePlayer currentRound humanScore computerScore ) ) ) ) )
 	
 	( cond (( eq roundCycle 11 ) (print "round 11") (print "Human pile: ") (print humanPile) (print "ComputerPile: ") (print computerPile) (list humanPile computerPile ) ) ) ) )
 	
@@ -1334,8 +1350,7 @@ C8 D8 H8 S9 C9 D9 H9 S9 CX DX HX SX CJ DJ HJ SJ CQ DQ HQ SQ CK DK HK SK) )
 	(print "Enter a file to load from: ")
 
 	(Let* ((fileName (read) ) )
-	
-	(cond (t (open fileName)) )))
+			(cond (t (open fileName)) )))
 	
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; Function Name: ReadSave
@@ -1365,9 +1380,16 @@ C8 D8 H8 S9 C9 D9 H9 S9 CX DX HX SX CJ DJ HJ SJ CQ DQ HQ SQ CK DK HK SK) )
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;	
 (defun LoadGame (save)
 
-	(cond (t (PlayTournament (nth 4 save) (nth 1 save) (nth 0 save) (PlayRound (nth 10 save) (nth 5 save) (nth 2 save) (nth 7 save) (nth 6 save) (nth 3 save) (nth 11 save) 7 () "False") "True" 1 "Neither" "Neither") ) ) )
+(print (length save))
 
-
+	; If the save has a build in it, I can atleast load in the save but thats it 
+	(cond ((eq (length save) 12) (PlayTournament (nth 4 save) (nth 1 save) (nth 0 save) (PlayRound (nth 10 save) (nth 5 save) (nth 2 save) (nth 7 save) (nth 6 save) (nth 3 save) (nth 11 save) 7 () "False" (nth 9 save) (nth 0 save) (nth 4 save) (nth 1 save) ) "True" 1 "Neither" "Neither" ) )
+	
+		  ; Otherwise, if there are no builds, then we can atleast load it in aswell
+		  ((eq (length save) 11) (PlayTournament (nth 4 save) (nth 1 save) (nth 0 save) (PlayRound (nth 9 save) (nth 5 save) (nth 2 save) (nth 7 save) (nth 6 save) (nth 3 save) (nth 10 save) 7 () "False" (nth 8 save) (nth 0 save) (nth 4 save) (nth 1 save) ) "True" 1 "Neither" "Neither") )
+	(t (print "Invalid save.") (return nil) ) ) )
+	
+	
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -1392,7 +1414,7 @@ C8 D8 H8 S9 C9 D9 H9 S9 CX DX HX SX CJ DJ HJ SJ CQ DQ HQ SQ CK DK HK SK) )
 	(Let* ((option (read)))
 
 	(cond ((eq option 1) (LoadGame (ReadSave (AskForSave) )) )
-		  ((eq option 2) (PlayTournament 0 0 1 (PlayRound (ActualDeck (loadDeck)) "True" () () () () (FirstPlayer) 1 () "True" ) "True" 1 "Neither" "Neither"))
+		  ((eq option 2) (PlayTournament 0 0 1 (PlayRound (ActualDeck (loadDeck)) "True" () () () () (FirstPlayer) 1 () "True" "Nil" 1 0 0 ) "True" 1 "Neither" "Neither"))
 		  ((eq option 3) (return))
 		  (t (print "Incorrect menu option") (OpeningMenu)))))
 	
