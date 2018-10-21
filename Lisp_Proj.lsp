@@ -217,13 +217,63 @@ C8 D8 H8 S9 C9 D9 H9 S9 CX DX HX SX CJ DJ HJ SJ CQ DQ HQ SQ CK DK HK SK) )
 ;	3) If neither of those if statements were true, recursively call the function and reduce the players hand
 ; Assistance Received: none 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun CheckTrail (playerCard playerHand)
+(defun CheckTrail (playerCard playerHand table)
 
-	(cond (( eq playerCard  (first playerHand )  )
+	(cond ((equal (CheckOtherCardsForCapture playerHand table "False") "True") "False")
+		  (( eq playerCard  (first playerHand )  )
 			"True" )
 		  (( eq playerHand () )
 			"False")
 		  (( CheckTrail playerCard ( rest playerHand ) )) ) )
+	
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; Function Name: CheckCurrentCard
+; Purpose: To check if a card has the same value as any of the cards on the table
+; Parameters:
+;	card, the current card we are comparing with
+;	hand, the player's hand
+; Return Value: "True" or "False if the player can capture
+; Local Variables: None
+; Algorithm: 
+;	1) If the table is empty, return "False"
+;  	2) If the value of the card is equal to the current card in the table were looking at, return "True"
+;	3) Otherwise, recursively call this function with the rest of the cards from the tab;e and check the rest
+; Assistance Received: none 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;	
+(defun CheckCurrentCard (card table)
+
+	(cond ((eq table () ) "False")
+		  ((eq (char (string card) 1) (char (string(first table)) 1) ) "True")
+		  (t (CheckCurrentCard card (rest table)))) )
+		  
+		  
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; Function Name: CheckOtherCardsForCapture
+; Purpose: To check if any cards in the player's hand can be used to capture a card on the table
+; Parameters:
+;	hand, the player's hand
+;	table, the cards on the table
+;	canCapture, true or false value for if the player can capture
+; Return Value: "True" or "False if the player can capture
+; Local Variables: 
+; 	trailCard, holds the card the player wants to trail with
+; Algorithm: 
+;	1) If the player's hand is empty, then we've cycled through everything and the player cant capture
+;  	2) If the paramet canCapture was true then return true
+;	3) Otherwise, recursively call this function with the rest of the cards from the hand and check the rest
+; Assistance Received: none 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;		  
+(defun CheckOtherCardsForCapture (hand table canCapture)
+
+	(cond ((equal canCapture "True") "True")
+	
+		   ((eq hand () ) "False" )
+	
+			
+		  (t (CheckOtherCardsForCapture (rest hand) table (CheckCurrentCard (first hand) table)))))
+			
+	
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; Function Name: MakeTrail
@@ -243,9 +293,12 @@ C8 D8 H8 S9 C9 D9 H9 S9 CX DX HX SX CJ DJ HJ SJ CQ DQ HQ SQ CK DK HK SK) )
 
 	( print "Enter a card you want to trail with" )
 
-	( Let* (( trailCard ( read ) )) 
+	( Let* (( trailCard ( read ) ))
+	
 
-	(cond (( equal ( CheckTrail trailCard hand ) "True" )
+	(cond (( equal ( CheckOtherCardsForCapture hand table "False" ) "True" ) (print "You can not trail with that card because there is a card on the table with thesame value") "False" ) )
+
+	(cond (( equal ( CheckTrail trailCard hand table) "True" )
 			trailCard )
 			( t 
 			(print "You can not trail with that card." ) "False" ) ) ) )
@@ -323,6 +376,7 @@ C8 D8 H8 S9 C9 D9 H9 S9 CX DX HX SX CJ DJ HJ SJ CQ DQ HQ SQ CK DK HK SK) )
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;		  
 (defun CheckCapture ( captureCard hand table )
 
+
 	(cond (( and (equal (CheckCaptureTable captureCard table) "True")
 			(equal (CheckCaptureHand captureCard hand) "True" ) "True" ) )
 			
@@ -380,25 +434,21 @@ C8 D8 H8 S9 C9 D9 H9 S9 CX DX HX SX CJ DJ HJ SJ CQ DQ HQ SQ CK DK HK SK) )
 	  ( table passedTable )
 	  ( moveCard passedMoveCard ))
 	  
-	  (print "---------")
-	  (print playerMove)
-	  (print moveCard)
-	  (print "---------")
 	  
-	  
+	; If the player hasn't picked a move, ask them what move they want to make
 	(cond (( eq playerMove nil )(HumanMakeMove hand table moveCard (HumanGetMoveChoice) ) ) )
 	  
-	  
+	; If the player wants to build, recursively call and ask for a different move
 	(cond (( eq playerMove 'b ) 
-		  ( print "Builds not implemented" ) (MakeBuild) ( HumanMakeMove hand table () ))
+		  ( print "Builds not implemented" ) ( HumanMakeMove hand table nil (HumanGetMoveChoice) ))
 		  (( eq playerMove 'c) 
 			(cond ((eq moveCard nil ) (HumanMakeMove hand table (MakeCapture hand table) playerMove ) )
 				  (( equal (CheckCapture moveCard hand table) "True" ) ( list playerMove moveCard ) )
 				  (( equal (CheckCapture moveCard hand table) "False" ) (HumanMakeMove hand table nil (HumanGetMoveChoice) ) ) ) )
 		  (( eq playerMove 't ) 
 				( cond  (( eq moveCard nil ) (HumanMakeMove hand table (MakeTrail hand table) playerMove ) )
-						(( equal (CheckTrail moveCard hand) "True" ) ( list playerMove  moveCard ) )
-						(( equal (CheckTrail moveCard hand) "False" ) (HumanMakeMove hand table nil (HumanGetMoveChoice) ) )
+						(( equal (CheckTrail moveCard hand table) "True" ) ( list playerMove  moveCard ) )
+						(( equal (CheckTrail moveCard hand table) "False" ) (HumanMakeMove hand table nil (HumanGetMoveChoice) ) )
 						( t (HumanMakeMove hand table (MakeTrail hand table) playerMove ) ) ) )) ) )
 						
 						
@@ -465,7 +515,7 @@ C8 D8 H8 S9 C9 D9 H9 S9 CX DX HX SX CJ DJ HJ SJ CQ DQ HQ SQ CK DK HK SK) )
 		   
 	; If the hand is empty, somtimes the particular card can be a string so if it is, then I am converting it to a regular
 	; atom so that it can be properly worked with
-	(cond ((eq hand () ) (cond ((eq (stringp trailCard) 't) (intern trailCard )) 
+	(cond ((eq hand () ) (print "Computer is trailing with:") (print trailCard) (cond ((eq (stringp trailCard) 't) (intern trailCard )) 
 								(t trailCard) )
 	)
 		  (( < (CardValue (first hand) )  (CardValue trailCard) ) ( ComputerMakeTrail (rest hand) table (first hand) ) )
@@ -541,8 +591,6 @@ C8 D8 H8 S9 C9 D9 H9 S9 CX DX HX SX CJ DJ HJ SJ CQ DQ HQ SQ CK DK HK SK) )
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;	
 (defun RemoveCaptureCardsFromTable ( passedCaptureCard passedTable passedNewTable)
 
-(print passedTable)
-(print passedNewTable)
 
 
 	(Let* ((captureCard passedCaptureCard)
@@ -773,7 +821,6 @@ C8 D8 H8 S9 C9 D9 H9 S9 CX DX HX SX CJ DJ HJ SJ CQ DQ HQ SQ CK DK HK SK) )
 		  ((eq move '3) (return nil))
 		  (t (MoveMainMenu)))))
 		  
-;(MoveMainMenu '1 '17 '( H5 H6 D4 D7 ) '( SX SQ SK D6 H8 ) 14 '( SA S4 CA C9 ) '( DJ DA C3 C5 ) '( C8 CJ HA ) 'Human '( S7 D3 D5 H2 H3 S5 D8 C2 H9 CX CQ CK HJ S2 S6 D9 DX DQ DK D2 HX HQ HK C4 C7 S8 SJ H4 H7 ) 'Human )
 	
 
 
@@ -821,8 +868,6 @@ C8 D8 H8 S9 C9 D9 H9 S9 CX DX HX SX CJ DJ HJ SJ CQ DQ HQ SQ CK DK HK SK) )
 			( computerScore passedComputerScore ) )
 			
 			
-		(print roundCycle)
-		(print playerMove&Card)
 			
 			
 			
@@ -879,20 +924,26 @@ C8 D8 H8 S9 C9 D9 H9 S9 CX DX HX SX CJ DJ HJ SJ CQ DQ HQ SQ CK DK HK SK) )
 			(cond (( equal nextPlayer "Human" ) (print "It's your turn") (MoveMainMenu currentRound computerScore computerHand
 												computerPile humanScore humanHand humanPile table lastCapturePlayer deck nextPlayer) 
 												( PlayRound deck humanHand computerHand table humanPile computerPile "Computer" 
-												(+ roundCycle 1) (print (HumanMakeMove humanHand table nil (HumanGetMoveChoice) )) firstGame
+												(+ roundCycle 1) (HumanMakeMove humanHand table nil (HumanGetMoveChoice) ) firstGame
 												lastCapturePlayer currentRound humanScore computerScore ) ) )
 												
-			(cond (( eq nextPlayer 'human ) (print "It's your turn") ( PlayRound deck humanHand computerHand table humanPile computerPile "Computer" 
-												(+ roundCycle 1) (print (HumanMakeMove humanHand table nil (HumanGetMoveChoice) )) firstGame
+			(cond (( eq nextPlayer 'human ) (print "It's your turn") (MoveMainMenu currentRound computerScore computerHand
+												computerPile humanScore humanHand humanPile table lastCapturePlayer deck nextPlayer)
+												( PlayRound deck humanHand computerHand table humanPile computerPile "Computer" 
+												(+ roundCycle 1) (HumanMakeMove humanHand table nil (HumanGetMoveChoice) ) firstGame
 												lastCapturePlayer currentRound humanScore computerScore ) ) ) ) )
 	
 	;Otherwise, then the computer will go...	
 	( cond (( eq roundCycle 7 )
-		(cond (( equal nextPlayer "Computer" ) (print "It's the computer's turn") ( PlayRound deck humanHand computerHand table humanPile computerPile 
+		(cond (( equal nextPlayer "Computer" ) (print "It's the computer's turn") (MoveMainMenu currentRound computerScore computerHand
+												computerPile humanScore humanHand humanPile table lastCapturePlayer deck nextPlayer)
+												( PlayRound deck humanHand computerHand table humanPile computerPile 
 												"Human" (+ roundCycle 1) (ComputerMakeMove computerHand table ) firstGame
 												lastCapturePlayer currentRound humanScore computerScore) ) )
 												
-		(cond (( eq nextPlayer 'Computer ) (print "It's the computer's turn") ( PlayRound deck humanHand computerHand table humanPile computerPile 
+		(cond (( eq nextPlayer 'Computer ) (print "It's the computer's turn") (MoveMainMenu currentRound computerScore computerHand
+												computerPile humanScore humanHand humanPile table lastCapturePlayer deck nextPlayer) 
+												( PlayRound deck humanHand computerHand table humanPile computerPile 
 												"Human" (+ roundCycle 1) (ComputerMakeMove computerHand table ) firstGame 
 												lastCapturePlayer currentRound humanScore computerScore) ) ) ) )
 		
@@ -949,7 +1000,7 @@ C8 D8 H8 S9 C9 D9 H9 S9 CX DX HX SX CJ DJ HJ SJ CQ DQ HQ SQ CK DK HK SK) )
 						nextPlayer 1 playerMove&Card firstGame lastCapturePlayer currentRound humanScore computerScore ) ) ) ) ) ) ) ) )
 
 	( cond (( eq roundCycle 10 )
-			(cond ((equal firstGame "False" ) (print "jfehvruhr") (PlayRound deck humanHand computerHand table humanPile computerPile 
+			(cond ((equal firstGame "False" ) (PlayRound deck humanHand computerHand table humanPile computerPile 
 																	nextPlayer 7 playerMove&Card firstGame lastCapturePlayer currentRound humanScore computerScore ) ) ) ) )
 	
 	( cond (( eq roundCycle 11 ) (print "round 11") (print "Human pile: ") (print humanPile) (print "ComputerPile: ") (print computerPile) (list humanPile computerPile ) ) ) ) )
@@ -986,7 +1037,7 @@ C8 D8 H8 S9 C9 D9 H9 S9 CX DX HX SX CJ DJ HJ SJ CQ DQ HQ SQ CK DK HK SK) )
 	(cond ((eq pile () ) playerScore )
 	
 		  ; If the card were looking at is the ten of diamonds, then call the function again and increment the score by 2
-		  (( eq (first pile) 'DX ) (TenDiamonds (rest pile) ( + playerScore 2) ) )
+		  (( eq (first pile) 'DX ) (print "Had the ten of diamonds, plus two points") (TenDiamonds (rest pile) ( + playerScore 2) ) )
 		  
 		  ; If it was neither of those things, then recursively call the function with the rest of the player pile
 		  ( t (TenDiamonds ( rest pile ) playerScore ) ) ) ) )
@@ -1011,11 +1062,12 @@ C8 D8 H8 S9 C9 D9 H9 S9 CX DX HX SX CJ DJ HJ SJ CQ DQ HQ SQ CK DK HK SK) )
 
 	(Let* (( pile passedPile )
 		  ( playerScore passedPlayerScore ))
+		 
 		  
 	(cond  (( eq pile () ) playerScore )
 	
-		   (( eq (first pile ) 'S2 ) (TwoSpades ( rest pile ) (+ playerScore 1) ) )
-		   (( t (TwoSpades ( rest pile ) playerScore ) ) ) ) ) )
+		   (( eq (first pile ) 'S2 ) (print "Had 2 of spades, plus a point") (TwoSpades ( rest pile ) (+ playerScore 1) ) )
+		   ( t (TwoSpades ( rest pile ) playerScore ) ) ) ) )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; Function Name: CountAces
@@ -1042,10 +1094,10 @@ C8 D8 H8 S9 C9 D9 H9 S9 CX DX HX SX CJ DJ HJ SJ CQ DQ HQ SQ CK DK HK SK) )
 		  ( playerScore passedPlayerScore ))
 		  
 	(cond (( eq pile () ) playerScore )
-		  (( eq (first pile ) 'CA ) ( CountAces ( rest pile ) ( + playerScore 1 ) ) )
-		  (( eq (first pile ) 'DA ) ( CountAces ( rest pile ) ( + playerScore 1 ) ) )
-		  (( eq (first pile ) 'HA ) ( CountAces ( rest pile ) ( + playerScore 1 ) ) )
-		  (( eq (first pile ) 'SA ) ( CountAces ( rest pile ) ( + playerScore 1 ) ) )
+		  (( eq (first pile ) 'CA ) (print "Had Ace of clubs, plus a point.") ( CountAces ( rest pile ) ( + playerScore 1 ) ) )
+		  (( eq (first pile ) 'DA ) (print "Had Ace of diamonds, plus a point.") ( CountAces ( rest pile ) ( + playerScore 1 ) ) )
+		  (( eq (first pile ) 'HA ) (print "Had Ace of hearts, plus a point.") ( CountAces ( rest pile ) ( + playerScore 1 ) ) )
+		  (( eq (first pile ) 'SA ) (print "Had Ace of spades, plus a point.") ( CountAces ( rest pile ) ( + playerScore 1 ) ) )
 		  (t (CountAces ( rest pile ) playerScore ) ) ) ) )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -1067,16 +1119,16 @@ C8 D8 H8 S9 C9 D9 H9 S9 CX DX HX SX CJ DJ HJ SJ CQ DQ HQ SQ CK DK HK SK) )
 ; 	4) If score counter is equal to 4, return with the new score counter for that player
 ; Assistance Received: none 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;	  
-(defun CalculateScore ( passedPlayerPile passed playerScore passedScoreCounter)
+(defun CalculateScore ( passedPlayerPile passedPlayerScore passedScoreCounter)
 
 	(Let* (( playerPile passedPlayerPile )
 		  ( playerScore passedPlayerScore )
 		  ( scoreCounter passedScoreCounter ))
 	
 	; Look for the 10 of diamonds
-	(cond (( eq scoreCounter 1 ) ( CalculateScore playerPile ( TenDiamonds playerPile 0 ) ( + scoreCounter 1 ) ) )
-		  (( eq scoreCounter 2 ) (CalculateScore playerPile ( TwoSpades playerPile 0 ) ( + scoreCounter 1 ) ) )
-		  (( eq scoreCounter 3 ) (CalculateScore playerPile ( CountAces playerPile ) ( + scoreCounter 1 ) ) )
+	(cond (( eq scoreCounter 1 ) ( CalculateScore playerPile ( TenDiamonds playerPile playerScore ) ( + scoreCounter 1 ) ) )
+		  (( eq scoreCounter 2 ) (CalculateScore playerPile ( TwoSpades playerPile playerScore ) ( + scoreCounter 1 ) ) )
+		  (( eq scoreCounter 3 ) (CalculateScore playerPile ( CountAces playerPile playerScore ) ( + scoreCounter 1 ) ) )
 		  (( eq scoreCounter 4 ) playerScore ) ) ) )
 		  
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -1106,7 +1158,7 @@ C8 D8 H8 S9 C9 D9 H9 S9 CX DX HX SX CJ DJ HJ SJ CQ DQ HQ SQ CK DK HK SK) )
 		  ; If the card is a spade, increment the count...
 		  ((eq (char stringFirstSpadeCard 0) '#\S) (CountSpades (rest playerPile) (+ spadeCount 1) ) )
 		  ; Else, keep cycling through the rest of the cards
-		  (t (CountCards ( rest playerPile ) cardCount ) ) ) ) )
+		  (t (CountSpades ( rest playerPile ) spadeCount ) ) ) ) )
 		  
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -1137,18 +1189,20 @@ C8 D8 H8 S9 C9 D9 H9 S9 CX DX HX SX CJ DJ HJ SJ CQ DQ HQ SQ CK DK HK SK) )
 		  ( humanNumSpades passedHumanNumSpades )
 		  ( computerNumSpades passedComputerNumSpades )
 		  ( counter passedCounter ) )
+		  
+		  
 
 	; First get the number of spades for the human player...
-	(cond ((eq counter 1) (CheckWhoHasMoreCards playerPiles ( CountCSpades ( first playerPiles ) 0 ) computerNumCards ( + counter 1 ) ) )
+	(cond ((eq counter 1) (CheckWhoHasMoreSpades playerPiles ( CountSpades (first (rest playerPiles )) 0 ) computerNumSpades ( + counter 1 ) ) )
 	
 		  ; Then get the number of spades the computer has...
-		  (( eq counter 2 ) ( CheckWhoHasMoreCards playerPiles humanNumCards ( CountSpades ( rest playerPiles ) 0 ) ( + counter 1 ) ) )
+		  (( eq counter 2 ) ( CheckWhoHasMoreSpades playerPiles humanNumSpades ( CountSpades (first (rest ( rest playerPiles ) ) ) 0 ) ( + counter 1 ) ) )
 		  
 		  ;	If the human has more cards than the computer, return "Human"
-		  (( > humanNumSpades computerNumCards ) "Human" )
+		  (( > humanNumSpades computerNumSpades ) "Human" )
 		  
 		  ;	If the computer has more cards then the human, return "Computer"
-		  (( < humanNumSpades computerNumCards ) "Computer" )
+		  (( < humanNumSpades computerNumSpades ) "Computer" )
 		  
 		  ;	If neither of them have more spades, return "Neither"
 		  (( eq humanNumSpades computerNumSpades ) "Neither" ) )
@@ -1204,12 +1258,14 @@ C8 D8 H8 S9 C9 D9 H9 S9 CX DX HX SX CJ DJ HJ SJ CQ DQ HQ SQ CK DK HK SK) )
 		  ( humanNumCards passedHumanNumCards )
 		  ( computerNumCards passedComputerNumCards )
 		  ( counter passedCounter ))
+
+		  
 	
 	; First, we need to get the count of the human player's pile...
-	(cond ((eq counter 1) (CheckWhoHasMoreCards playerPiles ( CountCards ( first playerPiles ) 0 ) computerNumCards ( + counter 1 ) ) )
+	(cond ((eq counter 1) (CheckWhoHasMoreCards playerPiles ( CountCards ( first (rest playerPiles)  ) 0 ) computerNumCards ( + counter 1 ) ) )
 	
 		  ; Then we need to get the count of the computer's pile...
-		  (( eq counter 2 ) ( CheckWhoHasMoreCards playerPiles humanNumCards ( CountCards ( rest playerPiles ) 0 ) ( + counter 1 ) ) )
+		  (( eq counter 2 ) ( CheckWhoHasMoreCards playerPiles humanNumCards ( CountCards (first (rest ( rest playerPiles ))) 0 ) ( + counter 1 ) ) )
 		  
 		  ; If the human has more cards than the computer, return "Human"
 		  (( > humanNumCards computerNumCards ) "Human" )
@@ -1265,60 +1321,61 @@ C8 D8 H8 S9 C9 D9 H9 S9 CX DX HX SX CJ DJ HJ SJ CQ DQ HQ SQ CK DK HK SK) )
 	   
 	   
 	   
+	   
 	
 	; Checking to see which of the player's have more cards
-	(cond (( eq tallyScore "True")
+	(cond (( equal tallyScore "True")
 			(cond (( eq tallyScoreCounter 1) (PlayTournament humanScore computerScore roundCounter pile tallyScore ( + tallyScoreCounter 1) 
 				(CheckWhoHasMoreCards pile 0 0 1 ) "Neither" ) ) ) ) ) 
 				
 				
 			
 	; After getting the player with the most cards, we now need to check if that player is the human and add 3 points to their score
-	(cond (( eq tallyScore "True" )
-			(cond (( eq moreCardPlayer "Human" ) (print "The human had more cards, plus three points.")
-			(PlayTournament ( + humanScore 3 ) computerScore roundCounter pile tallyScore tallyScoreCounter "Neither" "Neither") ) ) ) )
+	(cond (( equal tallyScore "True" )
+			(cond (( equal moreCardPlayer "Human" ) (print "The human had more cards, plus three points.")
+			(PlayTournament ( + humanScore 3 ) computerScore roundCounter pile tallyScore tallyScoreCounter "Neither" moreSpadePlayer) ) ) ) )
 			
 	; After getting the player with the most cards, now we must check if the computer had the most cards and add 3 points of necessary
-	(cond (( eq tallyScore "True" )
-			(cond (( eq moreCardPlayer "Computer" ) (print "The computer had more cards, plus three points.")
-			(PlayTournament humanScore ( + computerScore 3 ) roundCounter pile tallyScore tallyScoreCounter "Neither" "Neither" ) ) ) ) )
+	(cond (( equal tallyScore "True" )
+			(cond (( equal moreCardPlayer "Computer" ) (print "The computer had more cards, plus three points.")
+			(PlayTournament humanScore ( + computerScore 3 ) roundCounter pile tallyScore tallyScoreCounter "Neither" moreSpadePlayer ) ) ) ) )
 				
 	; Now we need to get the player who has the most spades
-	(cond (( eq tallyScore "True" )
+	(cond (( equal tallyScore "True" )
 			(cond (( eq tallyScoreCounter 2 ) ( PlayTournament humanScore computerScore roundCounter pile tallyScore 
-				( + tallyScoreCounter 1 ) "Neither" (CheckWhoHasMoreSpades pile 0 0 1 ) ) ) ) ) )
+				( + tallyScoreCounter 1 ) moreCardPlayer (CheckWhoHasMoreSpades pile 0 0 1 ) ) ) ) ) )
 				
 	; If the human had more spades, give them a point...
-	(cond (( eq tallyScore "True" )
-			(cond (( eq moreSpadePlayer "Human" ) (print "The human had more spades, plus a point.")
-			(PlayTournament ( + humanScore 1 ) computerScore roundCounter pile tallyScore tallyScoreCounter "Neither" "Neither" ) ) ) ) )
+	(cond (( equal tallyScore "True" )
+			(cond (( equal moreSpadePlayer "Human" ) (print "The human had more spades, plus a point.")
+			(PlayTournament ( + humanScore 1 ) computerScore roundCounter pile tallyScore tallyScoreCounter MoreCardPlayer "Neither" ) ) ) ) )
 				
 	; If the computer had more spades, give them a point
-	(cond (( eq tallyScore "True" )
-			(cond (( eq moreSpadePlayer "Computer" ) (print "The computer had more spades, plus a point.")
+	(cond (( equal tallyScore "True" )
+			(cond (( equal moreSpadePlayer "Computer" ) (print "The computer had more spades, plus a point.")
 			(PlayTournament humanScore ( + computerScore 1 ) roundCounter pile tallyScore tallyScoreCounter
-				"Neither" "Neither") ) ) ) )
+				moreCardPlayer "Neither") ) ) ) )
 			
 	; Now we need to calculate the rest of the ways to earn points for the human...
-	(cond (( eq tallyScore "True" )
-			(cond (( eq tallyScoreCounter 3 ) ( PlayTournament (+ humanScore (CalculateScore (first pile) 0 1)) computerScore roundCounter pile tallyScore
-				(+ tallyScoreCounter 1) "Neither" "Neither") ) ) ) )
+	(cond (( equal tallyScore "True" )
+			(cond (( eq tallyScoreCounter 3 ) (print "The human also made points by:") ( PlayTournament (+ humanScore (CalculateScore (first (rest pile)) 0 1)) computerScore roundCounter pile tallyScore
+				(+ tallyScoreCounter 1) moreCardPlayer moreSpadePlayer) ) ) ) )
 				
 	; Now we need to calculate the rest of the ways to earn points for the computer...
-	(cond (( eq tallyScore "True" )
-			(cond (( eq tallyScoreCounter 4 ) (PlayTournament humanScore (+ computerScore (CalculateScore (rest pile) 0 1)) roundCounter pile "False"
-				(+ tallyScoreCounter 1) "Neither" "Neither") ) ) ) )
+	(cond (( equal tallyScore "True" )
+			(cond (( eq tallyScoreCounter 4 ) (print "The computer also made points by:") (PlayTournament humanScore (+ computerScore (CalculateScore (first (rest (rest pile))) 0 1)) roundCounter pile tallyScore
+				(+ tallyScoreCounter 1) moreCardPlayer moreSpadePlayer) ) ) ) )
 	
 
 	; Here we are outputting the player's scores after calculating everything for that round
-	(cond (( eq tallyScore "True" )
-			(cond ((eq tallyScore 5 ) (print "Human Score: ") (print humanScore) (print "Computer Score: ") (print computerScore)
+	(cond (( equal tallyScore "True" )
+			(cond ((eq tallyScoreCounter 5 ) (print "Human Score: ") (print humanScore) (print "Computer Score: ") (print computerScore)
 			(PlayTournament humanScore (+ computerScore (CalculateScore (rest pile) 0 1)) roundCounter pile "False"
-				(+ tallyScoreCounter 1) "Neither" "Neither") ) ) ) )
+				(+ tallyScoreCounter 1) moreCardPlayer moreSpadePlayer) ) ) ) )
 				
 	
 		  ; Check if it was a tie between the players
-	(cond ((eq passedHumanScore computerScore )
+	(cond ((equal passedHumanScore computerScore )
 			(cond (( >= passedHumanScore 21 ) (print "It's a tie!") ( return nil ) ) ) )
 			
 				
@@ -1329,9 +1386,17 @@ C8 D8 H8 S9 C9 D9 H9 S9 CX DX HX SX CJ DJ HJ SJ CQ DQ HQ SQ CK DK HK SK) )
 		  ; If the computer score is greater or equal to 21 and the human's score is less than 21, then the computer won!
 		  (( >= computerScore 21) 
 			(cond (( < humanScore 21) (print "The computer won.") ( return nil ) ) ) ) )
+			
+			(return nil)
 				
 		  ; If no one won the game yet, play a round, increment the score, and get the player's piles from the round
-		  (PlayTournament humanScore computerScore (+ roundCounter 1) (PlayRound (ActualDeck (loadDeck)) () () () () () (FirstPlayer) 1 () "True" ) "True"  1 "Neither" "Neither" ) ) )
+		  (print (first pile))
+		  (PlayTournament humanScore computerScore (+ roundCounter 1) (PlayRound (ActualDeck (loadDeck)) () () () () () (first (first pile)) 1 () "True" nil roundCounter humanScore computerScore ) "True"  1 "Neither" "Neither" ) ) )
+		  
+		  
+		  ;(defun PlayRound ( passedDeck passedHumanHand passedComputerHand passedTable passedHumanPile passedComputerPile passedNextPlayer
+				 ;  passedRoundCycle passedPlayerMove&Card passedFirstGame passedLastCapturePlayer passedCurrentRound passedHumanScore passedComputerScore)
+		  
 		  
 		
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -1422,7 +1487,9 @@ C8 D8 H8 S9 C9 D9 H9 S9 CX DX HX SX CJ DJ HJ SJ CQ DQ HQ SQ CK DK HK SK) )
 
 		  
 		  
-(print (OpeningMenu))
+(OpeningMenu)
+
+;(PlayTournament 0 0 1 '( ("Computer") (DJ DA C3 C5 CA HA SA) (SX SQ SK D6 H8 S2 DX)) "True" 1 "Neither" "Neither")
 
 	
 
