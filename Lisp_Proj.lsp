@@ -13,7 +13,7 @@
 ; Parameters: None
 ; Return Value: 1 for heads or 2 for tails 
 ; Local Variables: 
-;            headsOrTails, holds either 1 or 2, depending on what the user typed in
+;   headsOrTails, holds either 1 or 2, depending on what the user typed in
 ; Algorithm: 
 ;	1) Get input from the user for if they want heads or tails
 ;  	2) If it is 1, return that
@@ -1002,7 +1002,7 @@ C8 D8 H8 S8 C9 D9 H9 S9 CX DX HX SX CJ DJ HJ SJ CQ DQ HQ SQ CK DK HK SK) )
 			
 			
 	( cond (( eq roundCycle 7 ) ( print "Table:" ) ( print table ) (print "Hand:") (print humanHand) ( print "Human pile:" ) ( print humanPile )
-								(print "Computer Hand:" ) (print computerHand ) ( print "Computer piile:" ) ( print computerPile ) (print "Deck: ") (print deck))  )
+								(print "Computer Hand:" ) (print computerHand ) ( print "Computer pile:" ) ( print computerPile ) (print "Deck: ") (print deck))  )
 	
 	; If the next player is the human, then they will go...
 	( cond (( eq roundCycle 7 )
@@ -1095,7 +1095,8 @@ C8 D8 H8 S8 C9 D9 H9 S9 CX DX HX SX CJ DJ HJ SJ CQ DQ HQ SQ CK DK HK SK) )
 				  ((equal lastCapturePlayer "Computer") (PlayRound deck humanHand computerHand table humanPile (AddTableCardsToPile table computerPile) nextPlayer (+ roundCycle 1) playerMove&Card firstGame lastCapturePlayer currentRound humanScore computerScore) ) ) ) )
 	
 	; After the cards from the table have been added, return the list of the lastCapturePlayer, human pile, and computer pile to the tournament class
-	( cond (( eq roundCycle 12 ) (print "Human pile: ") (print humanPile) (print "ComputerPile: ") (print computerPile) (list lastCapturePlayer humanPile computerPile ) ) ) ) )
+	( cond (( eq roundCycle 12 ) (print "-----------------")(print "Human pile: ") (print humanPile) (print "ComputerPile: ") 
+								 (print computerPile) (print "-----------------") (list lastCapturePlayer humanPile computerPile ) ) ) ) )
 			 	   
 	
 
@@ -1618,7 +1619,8 @@ C8 D8 H8 S8 C9 D9 H9 S9 CX DX HX SX CJ DJ HJ SJ CQ DQ HQ SQ CK DK HK SK) )
 
 		  
 ; Function call which starts the whole program		  
-;(OpeningMenu)
+(OpeningMenu)
 
-(PlayTournament 0 0 1 '( ("Computer") (DJ DA C3 C5 CA HA SA) (SX SQ SK D6 H8 S2 DX)) "True" 1 "Neither" "Neither")
+; Used for validating that all of the functions for calculating the scores work
+;(PlayTournament 0 0 1 '( ("Computer") (DJ DA C3 C5 CA HA SA) (SX SQ SK D6 H8 S2 DX)) "True" 1 "Neither" "Neither")
 
