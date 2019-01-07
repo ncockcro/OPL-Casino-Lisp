@@ -1,4 +1,4 @@
-# OPL-Casino-C
+# OPL-Casino-Lisp
 
 This program is a game called *Casino* and is written in Lisp.  Casino is a card game which is played by two players and the object is to score the most points by capturing cards.
 
